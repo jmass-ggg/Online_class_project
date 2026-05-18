@@ -168,7 +168,7 @@ class CreateTeacherSerializer(serializers.Serializer):
         username=generate_unique_username("tch")
         password=generate_password()
         
-        user=User.objects.create(
+        user=User.objects.create_user(
             username=username,
             password=password,
             full_name=full_name,
@@ -218,12 +218,12 @@ class CreateStudentSerializer(serializers.Serializer):
         phone=validated_data.pop("phone")
         address=validated_data.pop("address")
         date_of_birth=validated_data.pop("date_of_birth")
-        guardian_name=validated_data.pop("guardian_name")
+        guardian_name=validated_data.pop("guardian_name",None)
         
         username = generate_unique_username("std")
         password = generate_password()
         
-        user=User.objects.create(
+        user=User.objects.create_user(
             username=username,
             password=password,
             full_name=full_name,

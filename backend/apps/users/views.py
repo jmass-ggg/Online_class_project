@@ -1,6 +1,6 @@
 from rest_framework import generics,status,viewsets
 from rest_framework.permissions import AllowAny,IsAuthenticated
-from .permissions import IsAdminRole
+from .permissions import IsAdmin,IsStudent,IsTeacher
 from rest_framework.views import APIView    
 from .serializer import(
     AdminLoginSerializers,AdminRegisterSerializer,AdminMeSerializer
@@ -43,7 +43,7 @@ class AdminViewSet(viewsets.ViewSet):
     @action(
     detail=False,
     methods=["get"],
-        permission_classes=[IsAuthenticated, IsAdminRole],
+        permission_classes=[IsAuthenticated, IsAdmin],
     )
     def me(self, request):
 
@@ -53,3 +53,5 @@ class AdminViewSet(viewsets.ViewSet):
             serializer.data,
             status=status.HTTP_200_OK
         )
+        
+class 
