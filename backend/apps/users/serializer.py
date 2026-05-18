@@ -145,6 +145,7 @@ class AdminMeSerializer(serializers.ModelSerializer):
             "role",
             "is_staff",
         ]
+        
 class CreateTeacherSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100)
     phone = serializers.CharField(max_length=50)
@@ -250,3 +251,84 @@ class CreateStudentSerializer(serializers.Serializer):
             "username": instance.username,
             "password": getattr(instance, "generated_password", None),
         }
+        
+class StudentManagementSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
+    full_name = serializers.CharField(source="user.full_name", required=False)
+    role = serializers.CharField(source="user.role", read_only=True)
+    is_active = serializers.BooleanField(source="user.is_active", required=False)
+
+    class Meta:
+        model = StudentProfile
+        fields = [
+            "id",
+            "user_id",
+            "username",
+            "full_name",
+            "role",
+            "is_active",
+            "phone",
+            "address",
+            "date_of_birth",
+            "guardian_name",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user_id",
+            "username",
+            "role",
+            "created_at",
+        ]
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+
+        instance.user.save()
+
+        return super().update(instance, validated_data)
+
+
+class TeacherManagementSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
+    full_name = serializers.CharField(source="user.full_name", required=False)
+    role = serializers.CharField(source="user.role", read_only=True)
+    is_active = serializers.BooleanField(source="user.is_active", required=False)
+
+    class Meta:
+        model = TeacherProfile
+        fields = [
+            "id",
+            "user_id",
+            "username",
+            "full_name",
+            "role",
+            "is_active",
+            "phone",
+            "qualification",
+            "experience",
+            "bio",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user_id",
+            "username",
+            "role",
+            "created_at",
+        ]
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+
+        instance.user.save()
+
+        return super().update(instance, validated_data)

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path,include
-from apps.users.views import AdminViewSet
+from apps.users.views import AdminViewSet,StudentManagementViewSet,TeacherManagementViewSet
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import(
     SpectacularAPIView,
@@ -9,6 +9,8 @@ from drf_spectacular.views import(
 )
 router=DefaultRouter()
 router.register(r"auth",AdminViewSet,basename="auth")
+router.register(r"student",StudentManagementViewSet,basename="student")
+router.register(r"teacher",TeacherManagementViewSet,basename="teacher")
 
 
 urlpatterns = [
