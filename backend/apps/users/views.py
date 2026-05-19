@@ -2,76 +2,91 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from drf_spectacular.utils import (
-    extend_schema,
-    extend_schema_view,
-    OpenApiResponse,
-)
+from drf_spectacular.utils import extend_schema
 
-from .permissions import IsAdmin,IsAdminReadOnly
-from .serializer import (
-    AdminLoginSerializers,
-    AdminRegisterSerializer,
-    AdminMeSerializer,
-    CreateTeacherSerializer,
-    CreateStudentSerializer,
-    StudentManagementSerializer,
-    TeacherManagementSerializer,TeacherStudentLoginSerializer
-)
-from .models import StudentProfile, User, TeacherProfile
 from rest_framework_simplejwt.tokens import RefreshToken
 
-class AdminViewSet(viewsets.ViewSet):
+from .permissions import IsStudent, IsTeacher
+from .serializer import (
+    TeacherRegisterSerializer,
+    StudentRegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+    TeacherProfileSerializer,
+    StudentProfileSerializer,
+)
+
+
+class TeacherRegisterViewSet(viewsets.ViewSet):
     @extend_schema(
-        request=AdminRegisterSerializer,
-        responses=AdminRegisterSerializer
+        request=TeacherRegisterSerializer,
+        responses=TeacherRegisterSerializer,
+        tags=["Auth"]
     )
     @action(
         detail=False,
         methods=["post"],
         permission_classes=[AllowAny],
+        url_path="register"
     )
     def register(self, request):
-        
-
-        email=request.data.get("email")
-        if User.objects.filter(email = email).exists():
-            return Response(
-                {
-                "detail": "User with this email already exists."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = AdminRegisterSerializer(data=request.data)
+        serializer = TeacherRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
         return Response(
-            AdminRegisterSerializer(user).data,
+            TeacherRegisterSerializer(user).data,
             status=status.HTTP_201_CREATED
         )
 
+
+class StudentRegisterViewSet(viewsets.ViewSet):
     @extend_schema(
-        request=AdminLoginSerializers,
-        responses=AdminLoginSerializers
+        request=StudentRegisterSerializer,
+        responses=StudentRegisterSerializer,
+        tags=["Auth"]
     )
     @action(
         detail=False,
         methods=["post"],
         permission_classes=[AllowAny],
+        url_path="register"
+    )
+    def register(self, request):
+        serializer = StudentRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        return Response(
+            StudentRegisterSerializer(user).data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+class AuthViewSet(viewsets.ViewSet):
+    @extend_schema(
+        request=LoginSerializer,
+        responses=LoginSerializer,
+        tags=["Auth"]
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny],
+        url_path="login"
     )
     def login(self, request):
-        serializer = AdminLoginSerializers(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         refresh = serializer.validated_data["refresh"]
         access = serializer.validated_data["access"]
+        user = serializer.validated_data["user"]
 
         response = Response(
             {
                 "access": access,
-                "user": serializer.validated_data["user"],
+                "user": user,
             },
             status=status.HTTP_200_OK
         )
@@ -87,106 +102,18 @@ class AdminViewSet(viewsets.ViewSet):
 
         return response
 
-
     @action(
         detail=False,
         methods=["post"],
-        permission_classes=[AllowAny]
+        permission_classes=[AllowAny],
+        url_path="refresh"
     )
     def refresh(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
-        if not refresh_token:
-            return Response(
-            {"detail": "Refresh token not found in cookie."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-        try:
-            refresh=RefreshToken(refresh_token)
-            return Response(
-                 {
-                "access": str(refresh.access_token)
-            },
-            status=status.HTTP_200_OK
-            )
-        except Exception:
-            return Response(
-                {"detail": "Invalid refresh token."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-    @extend_schema(responses=AdminMeSerializer)
-    @action(
-        detail=False,
-        methods=["get"],
-        permission_classes=[IsAuthenticated, IsAdmin],
-    )
-    def me(self, request):
-        serializer = AdminMeSerializer(request.user)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
-
-class StudentTeacherLoginViewSet(viewsets.ViewSet):
-    def get_permissions(self):
-
-        if self.action in ["login", "refresh"]:
-            permission_classes = [AllowAny]
-
-        else:
-            permission_classes = [IsAuthenticated]
-
-        return [permission() for permission in permission_classes]
-
-    @extend_schema(
-        request=TeacherStudentLoginSerializer,
-        responses=TeacherStudentLoginSerializer
-    )
-    @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[AllowAny],
-    )
-    def login(self, request):
-        serializer = TeacherStudentLoginSerializer(
-            data=request.data,
-            context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        refresh = serializer.validated_data["refresh"]
-        access = serializer.validated_data["access"]
-
-        response = Response(
-            {
-                "access": access,
-                "user": serializer.validated_data["user"],
-            },
-            status=status.HTTP_200_OK
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-            max_age=7 * 24 * 60 * 60
-        )
-
-        return response
-    @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[AllowAny]
-    )
-    def refresh(self, request):
-
-        refresh_token = request.data.get("refresh")
 
         if not refresh_token:
             return Response(
-                {"detail": "Refresh token is required."},
+                {"detail": "Refresh token not found in cookie."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -205,115 +132,53 @@ class StudentTeacherLoginViewSet(viewsets.ViewSet):
                 {"detail": "Invalid refresh token."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-    
-    
-@extend_schema_view(
-    list=extend_schema(
-        responses={200: StudentManagementSerializer},
-        tags=["Admin Students"],
-        summary="List students",
-    ),
-    create=extend_schema(
-        request=CreateStudentSerializer,
-        responses={201: CreateStudentSerializer},
-        tags=["Admin Students"],
-        summary="Create student",
-        description="Admin creates a student account. Username and password are generated automatically.",
-    ),
-    retrieve=extend_schema(
-        responses={200: StudentManagementSerializer},
-        tags=["Admin Students"],
-        summary="Get student detail",
-    ),
-    update=extend_schema(
-        request=StudentManagementSerializer,
-        responses={200: StudentManagementSerializer},
-        tags=["Admin Students"],
-        summary="Update student",
-    ),
-    partial_update=extend_schema(
-        request=StudentManagementSerializer,
-        responses={200: StudentManagementSerializer},
-        tags=["Admin Students"],
-        summary="Partially update student",
-    ),
-    destroy=extend_schema(
-        responses={204: OpenApiResponse(description="Student deleted successfully")},
-        tags=["Admin Students"],
-        summary="Delete student",
-        description="Deletes both StudentProfile and linked User account.",
-    ),
-)
 
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="me"
+    )
+    def me(self, request):
+        serializer = UserSerializer(request.user)
 
-class StudentManagementViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdminReadOnly]
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
-    def get_queryset(self):
-        return StudentProfile.objects.select_related("user").filter(
-            user__role=User.RoleType.STUDENT
-        ).order_by("-created_at")
+    @extend_schema(
+        responses=TeacherProfileSerializer,
+        tags=["Auth"]
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated, IsTeacher],
+        url_path="me/teacher"
+    )
+    def me_teacher(self, request):
+        serializer = TeacherProfileSerializer(request.user.teacher_profile)
 
-    def get_serializer_class(self):
-        if self.action == "create":
-            return CreateStudentSerializer
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
-        return StudentManagementSerializer
+    @extend_schema(
+        responses=StudentProfileSerializer,
+        tags=["Auth"]
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated, IsStudent],
+        url_path="me/student"
+    )
+    def me_student(self, request):
+        serializer = StudentProfileSerializer(request.user.student_profile)
 
-    def perform_destroy(self, instance):
-        instance.user.delete()
-
-@extend_schema_view(
-    list=extend_schema(
-        responses={200: TeacherManagementSerializer},
-        tags=["Admin Teachers"],
-        summary="List teachers",
-    ),
-    create=extend_schema(
-        request=CreateTeacherSerializer,
-        responses={201: CreateTeacherSerializer},
-        tags=["Admin Teachers"],
-        summary="Create teacher",
-        description="Admin creates a teacher account. Username and password are generated automatically.",
-    ),
-    retrieve=extend_schema(
-        responses={200: TeacherManagementSerializer},
-        tags=["Admin Teachers"],
-        summary="Get teacher detail",
-    ),
-    update=extend_schema(
-        request=TeacherManagementSerializer,
-        responses={200: TeacherManagementSerializer},
-        tags=["Admin Teachers"],
-        summary="Update teacher",
-    ),
-    partial_update=extend_schema(
-        request=TeacherManagementSerializer,
-        responses={200: TeacherManagementSerializer},
-        tags=["Admin Teachers"],
-        summary="Partially update teacher",
-    ),
-    destroy=extend_schema(
-        responses={204: OpenApiResponse(description="Teacher deleted successfully")},
-        tags=["Admin Teachers"],
-        summary="Delete teacher",
-        description="Deletes both TeacherProfile and linked User account.",
-    ),
-)
-class TeacherManagementViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdminReadOnly]
-
-    def get_queryset(self):
-        return TeacherProfile.objects.select_related("user").filter(
-            user__role=User.RoleType.TEACHER
-        ).order_by("-created_at")
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return CreateTeacherSerializer
-
-        return TeacherManagementSerializer
-
-    def perform_destroy(self, instance):
-        instance.user.delete()
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )

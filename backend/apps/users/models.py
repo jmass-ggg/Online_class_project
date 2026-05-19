@@ -5,25 +5,38 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, password=None, **extra_fields):
-        if not username:
-            raise ValueError("Username is required")
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
 
-        user = self.model(username=username, **extra_fields)
+        email = self.normalize_email(email)
+
+        user = self.model(
+            email=email,
+            **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
+
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("role", User.RoleType.ADMIN)
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        if not extra_fields.get("email"):
-            raise ValueError("Admin must have an email")
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
 
-        return self.create_user(username, password, **extra_fields)
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
+
+        return self.create_user(
+            email=email,
+            password=password,
+            **extra_fields
+        )
 
 
 class User(AbstractUser):
@@ -38,31 +51,28 @@ class User(AbstractUser):
         editable=False
     )
 
-    username = models.CharField(max_length=100, unique=True)
-
+    username = None
     first_name = None
     last_name = None
 
     full_name = models.CharField(max_length=100)
 
-    
     email = models.EmailField(
         max_length=100,
-        unique=True,
-        null=True,
-        blank=True
+        unique=True
     )
 
     role = models.CharField(
         max_length=20,
-        choices=RoleType.choices
+        choices=RoleType.choices,
+        default=RoleType.STUDENT
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email", "full_name"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["full_name"]
 
     objects = UserManager()
 
@@ -83,9 +93,9 @@ class StudentProfile(models.Model):
         related_name="student_profile"
     )
 
-    phone = models.CharField(max_length=50)
-    address = models.TextField()
-    date_of_birth = models.DateField()
+    phone = models.CharField(max_length=50, blank=True)
+    address = models.TextField(blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
 
     guardian_name = models.CharField(
         max_length=100,
@@ -112,9 +122,9 @@ class TeacherProfile(models.Model):
         related_name="teacher_profile"
     )
 
-    phone = models.CharField(max_length=50)
-    qualification = models.CharField(max_length=150)
-    experience = models.PositiveIntegerField(help_text="Experience in years")
+    phone = models.CharField(max_length=50, blank=True)
+    qualification = models.CharField(max_length=150, blank=True)
+    experience = models.PositiveIntegerField(default=0)
     bio = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

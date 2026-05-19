@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import Course
 from .serializer import CourseSerializer,CourseCreateSerializer
-from apps.users.permissions import IsAdmin,IsAdminReadOnly
+from apps.users.permissions import IsAdmin,IsAdminReadOnly,IsTeacherCourseOwner
 
 
 @extend_schema_view(
@@ -49,7 +49,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all().order_by("-created_at")
     
 
-    permission_classes = [IsAdminReadOnly]
+    permission_classes = [IsTeacherCourseOwner]
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return CourseCreateSerializer
