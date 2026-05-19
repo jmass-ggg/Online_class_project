@@ -1,7 +1,7 @@
 import secrets
 import string
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model,authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
@@ -93,7 +93,41 @@ class AdminRegisterSerializer(serializers.Serializer):
             }
         }
 
+class TeacherStudentLoginSerializer(serializers.Serializer):
+    username=serializers.CharField()
+    password=serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        username=attrs.get("username")
+        password=attrs.get("password")
+        request = self.context.get("request")
+        
+        user=authenticate(
+            request=request,
+            username=username,
+            password=password
+        )
+        if not user:
+            raise serializers.ValidationError("Invalid username or password")
 
+        if not user.is_active:
+            raise serializers.ValidationError("This account is inactive")
+
+        if user.role not in [User.RoleType.TEACHER, User.RoleType.STUDENT]:
+            raise serializers.ValidationError("Admins must login using email")
+        tokens=get_token_for_user(user)
+        return {
+            **tokens,
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+            }
+        }
+        
+       
 class AdminLoginSerializers(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
@@ -177,19 +211,20 @@ class CreateTeacherSerializer(serializers.Serializer):
             is_active=True
         )
         
-        TeacherProfile.objects.create(
+        teacher_profile=TeacherProfile.objects.create(
             user=user,
             phone=phone,
             qualification=qualification,
             experience=experience
             ,bio=bio
         )
-        user.generated_password = password
-        return user
+        teacher_profile.generated_password = password
+        return teacher_profile
     def to_representation(self, instance):
         return {
             "message": "Teacher account created successfully",
-            "user_id": str(instance.id),
+            "user_id":str(instance.user.id),
+            "teacher_id": str(instance.id),
             "full_name": instance.full_name,
             "role": instance.role,
             "username": instance.username,
@@ -232,23 +267,24 @@ class CreateStudentSerializer(serializers.Serializer):
             is_active=True
         )
         
-        StudentProfile.objects.create(
+        student_profile=StudentProfile.objects.create(
             user=user,
             phone=phone,
             address=address,
             date_of_birth=date_of_birth,
             guardian_name=guardian_name
         )
-        user.generated_password = password
-        return user
+        student_profile.generated_password = password
+        return student_profile
     
     def to_representation(self, instance):
         return {
             "message": "Student account created successfully",
-            "user_id": str(instance.id),
-            "full_name": instance.full_name,
-            "role": instance.role,
-            "username": instance.username,
+            "user_id": str(instance.user.id),
+            "student_id": str(instance.id),
+            "full_name": instance.user.full_name,
+            "role": instance.user.role,
+            "username": instance.user.username,
             "password": getattr(instance, "generated_password", None),
         }
         

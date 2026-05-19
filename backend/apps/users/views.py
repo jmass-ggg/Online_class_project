@@ -18,10 +18,10 @@ from .serializer import (
     CreateTeacherSerializer,
     CreateStudentSerializer,
     StudentManagementSerializer,
-    TeacherManagementSerializer,
+    TeacherManagementSerializer,TeacherStudentLoginSerializer
 )
 from .models import StudentProfile, User, TeacherProfile
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class AdminViewSet(viewsets.ViewSet):
     @extend_schema(
@@ -34,14 +34,15 @@ class AdminViewSet(viewsets.ViewSet):
         permission_classes=[AllowAny],
     )
     def register(self, request):
-        admin_exists = User.objects.filter(role=User.RoleType.ADMIN).exists()
+        
 
-        if admin_exists:
+        email=request.data.get("email")
+        if User.objects.filter(email = email).exists():
             return Response(
                 {
-                    "detail": "Admin registration is closed. Ask an existing admin to create another admin."
+                "detail": "User with this email already exists."
                 },
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         serializer = AdminRegisterSerializer(data=request.data)
@@ -66,11 +67,54 @@ class AdminViewSet(viewsets.ViewSet):
         serializer = AdminLoginSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(
-            serializer.validated_data,
+        refresh = serializer.validated_data["refresh"]
+        access = serializer.validated_data["access"]
+
+        response = Response(
+            {
+                "access": access,
+                "user": serializer.validated_data["user"],
+            },
             status=status.HTTP_200_OK
         )
 
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=7 * 24 * 60 * 60
+        )
+
+        return response
+
+
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny]
+    )
+    def refresh(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response(
+            {"detail": "Refresh token not found in cookie."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        try:
+            refresh=RefreshToken(refresh_token)
+            return Response(
+                 {
+                "access": str(refresh.access_token)
+            },
+            status=status.HTTP_200_OK
+            )
+        except Exception:
+            return Response(
+                {"detail": "Invalid refresh token."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     @extend_schema(responses=AdminMeSerializer)
     @action(
         detail=False,
@@ -85,6 +129,87 @@ class AdminViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK
         )
 
+class StudentTeacherLoginViewSet(viewsets.ViewSet):
+    def get_permissions(self):
+
+        if self.action in ["login", "refresh"]:
+            permission_classes = [AllowAny]
+
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+    @extend_schema(
+        request=TeacherStudentLoginSerializer,
+        responses=TeacherStudentLoginSerializer
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny],
+    )
+    def login(self, request):
+        serializer = TeacherStudentLoginSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        refresh = serializer.validated_data["refresh"]
+        access = serializer.validated_data["access"]
+
+        response = Response(
+            {
+                "access": access,
+                "user": serializer.validated_data["user"],
+            },
+            status=status.HTTP_200_OK
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=7 * 24 * 60 * 60
+        )
+
+        return response
+    @action(
+        detail=False,
+        methods=["post"],
+        permission_classes=[AllowAny]
+    )
+    def refresh(self, request):
+
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+
+            return Response(
+                {
+                    "access": str(refresh.access_token)
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception:
+            return Response(
+                {"detail": "Invalid refresh token."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+    
+    
 @extend_schema_view(
     list=extend_schema(
         responses={200: StudentManagementSerializer},
@@ -122,6 +247,8 @@ class AdminViewSet(viewsets.ViewSet):
         description="Deletes both StudentProfile and linked User account.",
     ),
 )
+
+
 class StudentManagementViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdmin]
 
