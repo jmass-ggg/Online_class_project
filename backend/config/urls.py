@@ -7,6 +7,8 @@ from drf_spectacular.views import(
     SpectacularSwaggerView,
     SpectacularRedocView
 )
+from apps.courses.views import CourseViewSet
+
 router=DefaultRouter()
 router.register(r"auth",AdminViewSet,basename="auth")
 router.register(r"student",StudentManagementViewSet,basename="student")
@@ -15,6 +17,11 @@ router.register(
     r"student_teacher_login",
     StudentTeacherLoginViewSet,
     basename="student_teacher_login"
+)
+router.register(
+    r"Course",
+    CourseViewSet,
+    basename="Course"
 )
 urlpatterns = [
     path('admin/', admin.site.urls),
