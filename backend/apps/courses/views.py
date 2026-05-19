@@ -3,8 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from .models import Course
-from .serializer import CourseSerializer
-from apps.users.permissions import IsAdmin
+from .serializer import CourseSerializer,CourseCreateSerializer
+from apps.users.permissions import IsAdmin,IsAdminReadOnly
 
 
 @extend_schema_view(
@@ -18,7 +18,7 @@ from apps.users.permissions import IsAdmin
         tags=["Courses"],
         summary="Create a course",
         description="Admin creates a new course. `created_by` is auto-assigned.",
-        request=CourseSerializer,
+        request=CourseCreateSerializer,
         responses=CourseSerializer
     ),
     retrieve=extend_schema(
@@ -29,13 +29,13 @@ from apps.users.permissions import IsAdmin
     update=extend_schema(
         tags=["Courses"],
         summary="Update course",
-        request=CourseSerializer,
+        request=CourseCreateSerializer,
         responses=CourseSerializer
     ),
     partial_update=extend_schema(
         tags=["Courses"],
         summary="Partially update course",
-        request=CourseSerializer,
+        request=CourseCreateSerializer,
         responses=CourseSerializer
     ),
     destroy=extend_schema(
@@ -47,9 +47,12 @@ from apps.users.permissions import IsAdmin
 )
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all().order_by("-created_at")
-    serializer_class = CourseSerializer
+    
 
-    permission_classes = [IsAuthenticated, IsAdmin]
-
+    permission_classes = [IsAdminReadOnly]
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return CourseCreateSerializer
+        return CourseSerializer
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

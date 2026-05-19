@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission,SAFE_METHODS
 
 
 class IsAdmin(BasePermission):
@@ -28,4 +28,14 @@ class IsTeacher(BasePermission):
             and request.user.is_authenticated
             and getattr(request.user, "role", None) == "TEACHER"
             and request.user.is_active
+        )
+        
+class IsAdminReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return request.user and request.user.is_authenticated
+        request(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "ADMIN"
         )
