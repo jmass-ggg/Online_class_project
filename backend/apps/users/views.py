@@ -2,15 +2,13 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
-
-
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
     OpenApiResponse,
 )
 
-from .permissions import IsAdmin
+from .permissions import IsAdmin,IsAdminReadOnly
 from .serializer import (
     AdminLoginSerializers,
     AdminRegisterSerializer,
@@ -250,7 +248,7 @@ class StudentTeacherLoginViewSet(viewsets.ViewSet):
 
 
 class StudentManagementViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminReadOnly]
 
     def get_queryset(self):
         return StudentProfile.objects.select_related("user").filter(
@@ -304,7 +302,7 @@ class StudentManagementViewSet(viewsets.ModelViewSet):
     ),
 )
 class TeacherManagementViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated, IsAdminReadOnly]
 
     def get_queryset(self):
         return TeacherProfile.objects.select_related("user").filter(
