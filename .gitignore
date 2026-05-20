@@ -1,5 +1,8 @@
 venv/
+hello/
 __pycache__/
 *.pyc
 .env
 db.sqlite3
+rough.txt
+er_diagram.txt

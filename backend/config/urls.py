@@ -10,7 +10,7 @@ from drf_spectacular.views import(
     SpectacularRedocView
 )
 from apps.courses.views import CourseViewSet
-
+from apps.batch.views import BatchViewSet
 router=DefaultRouter()
 router.register(
     r"auth/teacher",
@@ -34,6 +34,11 @@ router.register(
     r"Course",
     CourseViewSet,
     basename="Course"
+)
+router.register(
+     r"Batch",
+    BatchViewSet,
+    basename="Batch"
 )
 urlpatterns = [
     path('admin/', admin.site.urls),

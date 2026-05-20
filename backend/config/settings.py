@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'apps.courses',
     'apps.users',
+    'apps.batch'
 ]
 
 MIDDLEWARE = [

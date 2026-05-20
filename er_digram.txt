@@ -1,0 +1,193 @@
+erDiagram
+
+    USER {
+        int id PK
+        string full_name
+        string email
+        string password
+        enum role
+        boolean is_active
+        boolean is_staff
+        datetime created_at
+        datetime updated_at
+    }
+
+    STUDENT_PROFILE {
+        int id PK
+        int user_id FK
+        string phone
+        string address
+        date date_of_birth
+        string guardian_name
+        datetime created_at
+    }
+
+    TEACHER_PROFILE {
+        int id PK
+        int user_id FK
+        string phone
+        string qualification
+        int experience
+        text bio
+        datetime created_at
+    }
+
+    COURSE {
+        int id PK
+        string title
+        text description
+        string duration
+        decimal price
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    BATCH {
+        int id PK
+        int course_id FK
+        int teacher_id FK
+        string name
+        date start_date
+        date end_date
+        int max_students
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    ENROLLMENT {
+        int id PK
+        int student_id FK
+        int batch_id FK
+        datetime enrolled_at
+        enum status
+        datetime created_at
+    }
+
+    CLASS_SESSION {
+        int id PK
+        int batch_id FK
+        int teacher_id FK
+        string title
+        text description
+        date date
+        time start_time
+        time end_time
+        string livekit_room_name
+        string livekit_room_id
+        enum status
+        datetime created_at
+        datetime updated_at
+    }
+
+    CLASS_INVITE {
+        int id PK
+        int class_session_id FK
+        int student_id FK
+        string token
+        boolean is_used
+        datetime created_at
+        datetime sent_at
+    }
+
+    ATTENDANCE {
+        int id PK
+        int class_session_id FK
+        int batch_id FK
+        date date
+        datetime created_at
+        datetime updated_at
+    }
+
+    ATTENDANCE_RECORD {
+        int id PK
+        int attendance_id FK
+        int student_id FK
+        enum status
+        datetime join_time
+        datetime leave_time
+        int duration_minutes
+        text remarks
+        datetime created_at
+    }
+
+    STUDY_MATERIAL {
+        int id PK
+        int batch_id FK
+        int uploaded_by_id FK
+        string title
+        text description
+        string file
+        string file_type
+        datetime uploaded_at
+        boolean is_active
+    }
+
+    ASSIGNMENT {
+        int id PK
+        int batch_id FK
+        int teacher_id FK
+        string title
+        text description
+        string file
+        datetime due_date
+        int max_marks
+        datetime created_at
+        datetime updated_at
+    }
+
+    SUBMISSION {
+        int id PK
+        int assignment_id FK
+        int student_id FK
+        string submitted_file
+        text submitted_text
+        datetime submitted_at
+        int marks
+        text feedback
+        enum status
+    }
+
+    NOTIFICATION {
+        int id PK
+        int user_id FK
+        string title
+        text message
+        enum type
+        boolean is_read
+        datetime created_at
+        datetime sent_at
+    }
+
+    USER ||--o| STUDENT_PROFILE : has
+    USER ||--o| TEACHER_PROFILE : has
+
+    COURSE ||--o{ BATCH : contains
+    USER ||--o{ BATCH : teaches
+
+    USER ||--o{ ENROLLMENT : enrolls
+    BATCH ||--o{ ENROLLMENT : has
+
+    BATCH ||--o{ CLASS_SESSION : includes
+    USER ||--o{ CLASS_SESSION : teaches
+
+    CLASS_SESSION ||--o{ CLASS_INVITE : sends
+    USER ||--o{ CLASS_INVITE : receives
+
+    CLASS_SESSION ||--|| ATTENDANCE : has
+    BATCH ||--o{ ATTENDANCE : has
+
+    ATTENDANCE ||--o{ ATTENDANCE_RECORD : contains
+    USER ||--o{ ATTENDANCE_RECORD : marked_for
+
+    BATCH ||--o{ STUDY_MATERIAL : has
+    USER ||--o{ STUDY_MATERIAL : uploads
+
+    BATCH ||--o{ ASSIGNMENT : has
+    USER ||--o{ ASSIGNMENT : creates
+
+    ASSIGNMENT ||--o{ SUBMISSION : receives
+    USER ||--o{ SUBMISSION : submits
+
+    USER ||--o{ NOTIFICATION : receives
