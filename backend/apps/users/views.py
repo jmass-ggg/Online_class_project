@@ -103,10 +103,11 @@ class AuthViewSet(viewsets.ViewSet):
         return response
 
     @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[AllowAny],
-        url_path="refresh"
+    detail=False,
+    methods=["post"],
+    permission_classes=[AllowAny],
+    authentication_classes=[],
+    url_path="refresh"
     )
     def refresh(self, request):
         refresh_token = request.COOKIES.get("refresh_token")

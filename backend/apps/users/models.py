@@ -62,6 +62,11 @@ class User(AbstractUser):
         unique=True
     )
 
+    phone = models.CharField(
+        max_length=50,
+        blank=True
+    )
+
     role = models.CharField(
         max_length=20,
         choices=RoleType.choices,
@@ -93,7 +98,7 @@ class StudentProfile(models.Model):
         related_name="student_profile"
     )
 
-    phone = models.CharField(max_length=50, blank=True)
+    
     address = models.TextField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
 
@@ -122,7 +127,7 @@ class TeacherProfile(models.Model):
         related_name="teacher_profile"
     )
 
-    phone = models.CharField(max_length=50, blank=True)
+   
     qualification = models.CharField(max_length=150, blank=True)
     experience = models.PositiveIntegerField(default=0)
     bio = models.TextField(blank=True, null=True)

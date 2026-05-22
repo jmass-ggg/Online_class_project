@@ -23,7 +23,7 @@ class Batch(models.Model):
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="classrooms",
+        related_name="courses",
         limit_choices_to={"role": "TEACHER"}
     )
     id=models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
@@ -47,10 +47,8 @@ class Batch(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def clean(self):
-        if self.teacher.role != "TEACHER":
+        if self.teacher and self.teacher.role != "TEACHER":
             raise ValidationError("Only teachers can create classrooms.")
-        if self.course.teacher != self.teacher:
-            raise ValidationError("Teacher must be the owner of the selected course.")
 
         if self.end_date and self.start_date > self.end_date:
             raise ValidationError("Start date cannot be after end date.")

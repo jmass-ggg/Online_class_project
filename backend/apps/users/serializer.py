@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "full_name",
-            "email",
+            "email","phone",
             "role",
         ]
 
@@ -25,7 +25,6 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "phone",
             "qualification",
             "experience",
             "bio",
@@ -41,7 +40,6 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "phone",
             "address",
             "date_of_birth",
             "guardian_name",
@@ -52,9 +50,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 class TeacherRegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100)
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, min_length=6)
-
     phone = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, min_length=6)
     qualification = serializers.CharField(required=False, allow_blank=True)
     experience = serializers.IntegerField(required=False, default=0)
     bio = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -66,7 +63,7 @@ class TeacherRegisterSerializer(serializers.Serializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        phone = validated_data.pop("phone", "")
+
         qualification = validated_data.pop("qualification", "")
         experience = validated_data.pop("experience", 0)
         bio = validated_data.pop("bio", "")
@@ -75,13 +72,13 @@ class TeacherRegisterSerializer(serializers.Serializer):
             email=validated_data["email"],
             password=validated_data["password"],
             full_name=validated_data["full_name"],
+            phone=validated_data["phone"],
             role=User.RoleType.TEACHER,
             is_active=True,
         )
 
         TeacherProfile.objects.create(
             user=user,
-            phone=phone,
             qualification=qualification,
             experience=experience,
             bio=bio,
@@ -95,13 +92,11 @@ class TeacherRegisterSerializer(serializers.Serializer):
             "user": UserSerializer(instance).data,
         }
 
-
 class StudentRegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=100)
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, min_length=6)
-
     phone = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, min_length=6)
     address = serializers.CharField(required=False, allow_blank=True)
     date_of_birth = serializers.DateField(required=False, allow_null=True)
     guardian_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -113,7 +108,7 @@ class StudentRegisterSerializer(serializers.Serializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        phone = validated_data.pop("phone", "")
+
         address = validated_data.pop("address", "")
         date_of_birth = validated_data.pop("date_of_birth", None)
         guardian_name = validated_data.pop("guardian_name", None)
@@ -122,13 +117,14 @@ class StudentRegisterSerializer(serializers.Serializer):
             email=validated_data["email"],
             password=validated_data["password"],
             full_name=validated_data["full_name"],
+            phone=validated_data["phone"],
             role=User.RoleType.STUDENT,
             is_active=True,
         )
 
         StudentProfile.objects.create(
             user=user,
-            phone=phone,
+            
             address=address,
             date_of_birth=date_of_birth,
             guardian_name=guardian_name,
@@ -152,7 +148,7 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get("password")
 
         user = authenticate(
-            email=email,
+            username=email,
             password=password
         )
 
