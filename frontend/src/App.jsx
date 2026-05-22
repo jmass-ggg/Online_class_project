@@ -1,181 +1,78 @@
-import { useState } from "react";
-import {
-  LiveKitRoom,
-  VideoConference,
-  RoomAudioRenderer,
-} from "@livekit/components-react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import Landing from "./pages/Landing.jsx";
+import Login from "./pages/Login.jsx";
+import RegisterTeacher from "./pages/RegisterTeacher.jsx";
+import RegisterStudent from "./pages/RegisterStudent.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import AuthLayout from "./layouts/AuthLayout.jsx";
+import DashboardLayout from "./layouts/DashboardLayout.jsx";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import TeacherRoute from "./routes/TeacherRoute.jsx";
+import StudentRoute from "./routes/StudentRoute.jsx";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard.jsx";
+import TeacherCourses from "./pages/teacher/TeacherCourses.jsx";
+import CreateCourse from "./pages/teacher/CreateCourse.jsx";
+import EditCourse from "./pages/teacher/EditCourse.jsx";
+import CourseDetails from "./pages/teacher/CourseDetails.jsx";
+import TeacherBatches from "./pages/teacher/TeacherBatches.jsx";
+import CreateBatch from "./pages/teacher/CreateBatch.jsx";
+import EditBatch from "./pages/teacher/EditBatch.jsx";
+import BatchDetails from "./pages/teacher/BatchDetails.jsx";
+import TeacherSessions from "./pages/teacher/TeacherSessions.jsx";
+import CreateSession from "./pages/teacher/CreateSession.jsx";
+import Attendance from "./pages/teacher/Attendance.jsx";
+import StudentDashboard from "./pages/student/StudentDashboard.jsx";
+import JoinClassroom from "./pages/student/JoinClassroom.jsx";
+import StudentBatches from "./pages/student/StudentBatches.jsx";
+import StudentCourseDetails from "./pages/student/StudentCourseDetails.jsx";
+import StudentSessions from "./pages/student/StudentSessions.jsx";
+import LiveClassRoom from "./pages/live/LiveClassRoom.jsx";
 
-import "@livekit/components-styles";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("access") || ""
-  );
-
-  const [sessionId, setSessionId] = useState("");
-  const [connection, setConnection] = useState(null);
-  const [message, setMessage] = useState("");
-
-  async function login(e) {
-    e.preventDefault();
-    setMessage("");
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data, null, 2));
-      }
-
-      localStorage.setItem("access", data.access);
-      setAccessToken(data.access);
-      setMessage("Login successful.");
-    } catch (error) {
-      setMessage(error.message);
-    }
-  }
-
-  async function callSessionAction(action) {
-    setMessage("");
-
-    if (!accessToken) {
-      setMessage("Please login first.");
-      return;
-    }
-
-    if (!sessionId) {
-      setMessage("Please enter class session ID.");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/ClassSession/${sessionId}/${action}/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data, null, 2));
-      }
-
-      setConnection({
-        serverUrl: data.server_url,
-        token: data.participant_token,
-        roomName: data.room_name,
-      });
-
-      setMessage(`${action} success.`);
-    } catch (error) {
-      setMessage(error.message);
-    }
-  }
-
-  function logout() {
-    localStorage.removeItem("access");
-    setAccessToken("");
-    setConnection(null);
-    setMessage("Logged out.");
-  }
-
-  if (connection) {
-    return (
-      <LiveKitRoom
-        serverUrl={connection.serverUrl}
-        token={connection.token}
-        connect={true}
-        audio={true}
-        video={true}
-        data-lk-theme="default"
-        style={{ height: "100vh" }}
-        onDisconnected={() => setConnection(null)}
-      >
-        <VideoConference />
-        <RoomAudioRenderer />
-      </LiveKitRoom>
-    );
-  }
-
+export default function App() {
   return (
-    <div className="page">
-      <div className="card">
-        <h1>Live Class Test</h1>
+    <Routes>
+      <Route element={<AuthLayout />}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register/teacher" element={<RegisterTeacher />} />
+        <Route path="/register/student" element={<RegisterStudent />} />
+      </Route>
 
-        <form onSubmit={login} className="section">
-          <h2>1. Login</h2>
+      <Route element={<ProtectedRoute />}>
+        <Route path="/live/session/:id" element={<LiveClassRoom />} />
 
-          <input
-            type="email"
-            placeholder="teacher/student email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <Route element={<TeacherRoute />}>
+          <Route path="/teacher" element={<DashboardLayout />}>
+            <Route index element={<Navigate to="/teacher/dashboard" replace />} />
+            <Route path="dashboard" element={<TeacherDashboard />} />
+            <Route path="courses" element={<TeacherCourses />} />
+            <Route path="courses/create" element={<CreateCourse />} />
+            <Route path="courses/:id" element={<CourseDetails />} />
+            <Route path="courses/:id/edit" element={<EditCourse />} />
+            <Route path="batches" element={<TeacherBatches />} />
+            <Route path="batches/create" element={<CreateBatch />} />
+            <Route path="batches/:id" element={<BatchDetails />} />
+            <Route path="batches/:id/edit" element={<EditBatch />} />
+            <Route path="sessions" element={<TeacherSessions />} />
+            <Route path="sessions/create" element={<CreateSession />} />
+            <Route path="sessions/:id/attendance" element={<Attendance />} />
+          </Route>
+        </Route>
 
-          <input
-            type="password"
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+        <Route element={<StudentRoute />}>
+          <Route path="/student" element={<DashboardLayout />}>
+            <Route index element={<Navigate to="/student/dashboard" replace />} />
+            <Route path="dashboard" element={<StudentDashboard />} />
+            <Route path="join-classroom" element={<JoinClassroom />} />
+            <Route path="batches" element={<StudentBatches />} />
+            <Route path="courses/:id" element={<StudentCourseDetails />} />
+            <Route path="sessions" element={<StudentSessions />} />
+          </Route>
+        </Route>
+      </Route>
 
-          <button type="submit">Login</button>
-
-          {accessToken && (
-            <button type="button" onClick={logout} className="danger">
-              Logout
-            </button>
-          )}
-        </form>
-
-        <div className="section">
-          <h2>2. Enter Class Session ID</h2>
-
-          <input
-            placeholder="Example: 9c6e3b7d-8dff-4dcb-9ec9-7e2bf2195a74"
-            value={sessionId}
-            onChange={(e) => setSessionId(e.target.value)}
-          />
-        </div>
-
-        <div className="section">
-          <h2>3. Start or Join</h2>
-
-          <button onClick={() => callSessionAction("start")}>
-            Start as Teacher
-          </button>
-
-          <button onClick={() => callSessionAction("join")}>
-            Join as Student
-          </button>
-        </div>
-
-        {message && <pre>{message}</pre>}
-      </div>
-    </div>
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="/404" replace />} />
+    </Routes>
   );
 }
-
-export default App;

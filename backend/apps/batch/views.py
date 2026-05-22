@@ -87,3 +87,7 @@ class BatchViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Only the batch owner can delete this batch.")
 
         instance.delete()
+        
+        
+        
+        

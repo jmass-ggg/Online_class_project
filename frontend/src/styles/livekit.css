@@ -1,0 +1,17 @@
+.live-page { min-height: 100vh; background: #020617; color: white; display: grid; grid-template-rows: auto 1fr; }
+.live-topbar {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 22px;
+  background: rgba(15, 23, 42, 0.96);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.live-topbar h1 { margin: 0; font-size: 1.25rem; }
+.live-topbar p { margin: 4px 0 0; color: #cbd5e1; }
+.live-stage { min-height: 0; }
+.live-stage .lk-room-container { height: calc(100vh - 78px); }
+.live-missing { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--bg); }
+.live-missing .auth-card { text-align: center; }
