@@ -18,7 +18,7 @@ class ClassSession(models.Model):
         editable=False
     )
 
-    batch = models.ForeignKey(
+    classroom = models.ForeignKey(
         Batch,
         on_delete=models.CASCADE,
         related_name="class_sessions"
@@ -56,8 +56,8 @@ class ClassSession(models.Model):
     def clean(self):
         if self.teacher and self.teacher.role != "TEACHER":
             raise ValidationError("Only teachers can create live class sessions.")
-        if self.batch and self.teacher:
-            if self.batch.teacher != self.teacher:
+        if self.classroom and self.teacher:
+            if self.classroom.teacher != self.teacher:
                 raise ValidationError("Only teachers can create live class sessions.")
         if self.start_time and self.end_time:
             if self.start_time>= self.end_time:
