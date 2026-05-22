@@ -1,5 +1,10 @@
 from rest_framework import viewsets
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from apps.users.permissions import IsTeacherCourseOwner
@@ -11,39 +16,31 @@ from .models import Batch
     list=extend_schema(
         tags=["Batch"],
         summary="List all batches",
-        description="Retrieve all available batches ordered by latest created.",
+        description="Get all batches",
+        responses=BatchSerializer(many=True),
+    ),
+
+    retrieve=extend_schema(
+        tags=["Batch"],
+        summary="Get batch by ID",
+        description="Retrieve a single batch using batch ID",
         responses=BatchSerializer,
     ),
     create=extend_schema(
-        tags=["Batch"],
-        summary="Create a batch",
-        description="Teacher creates a new batch for their own course.",
-        request=BatchCreateSerializer,
-        responses=BatchSerializer,
-    ),
-    retrieve=extend_schema(
-        tags=["Batch"],
-        summary="Get batch detail",
-        responses=BatchSerializer,
-    ),
-    update=extend_schema(
-        tags=["Batch"],
-        summary="Update batch",
-        request=BatchCreateSerializer,
-        responses=BatchSerializer,
-    ),
-    partial_update=extend_schema(
-        tags=["Batch"],
-        summary="Partially update batch",
-        request=BatchCreateSerializer,
-        responses=BatchSerializer,
-    ),
-    destroy=extend_schema(
-        tags=["Batch"],
-        summary="Delete batch",
-        description="Only the batch owner teacher can delete this batch.",
-        responses=None,
-    ),
+         tags=["Batch"],
+        summary="List course batches",
+        description="List batches under a course.",
+        parameters=[
+            OpenApiParameter(
+                 name="course_id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="Course ID",
+            )
+        ],
+            request=BatchCreateSerializer,
+            responses=BatchSerializer
+    )
 )
 class BatchViewSet(viewsets.ModelViewSet):
     queryset = Batch.objects.all().order_by("-created_at")
