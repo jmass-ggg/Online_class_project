@@ -5,66 +5,185 @@ import Loader from "../../components/Loader.jsx";
 import { courseApi } from "../../api/courseApi";
 import { useToast } from "../../context/ToastContext.jsx";
 import { parseApiError, required } from "../../utils/validators";
+import {
+  COURSE_CATEGORY_OPTIONS,
+  COURSE_LEVEL_OPTIONS,
+} from "../../utils/constants";
+
+const initialForm = {
+  title: "",
+  description: "",
+  category: "",
+  level: "",
+  duration_weeks: "",
+};
 
 export default function EditCourse() {
-  const { id } = useParams();
-  const [form, setForm] = useState(null);
+  const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
   useEffect(() => {
-    async function load() {
+    const loadCourse = async () => {
       try {
+        setPageLoading(true);
+
         const response = await courseApi.getCourse(id);
-        setForm(response.data);
+        const course = response.data;
+
+        setForm({
+          title: course.title || "",
+          description: course.description || "",
+          category: course.category || "",
+          level: course.level || "",
+          duration_weeks: course.duration_weeks || "",
+        });
       } catch (err) {
         setError(parseApiError(err));
       } finally {
-        setLoading(false);
+        setPageLoading(false);
       }
-    }
-    load();
+    };
+
+    loadCourse();
   }, [id]);
 
-  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const update = (event) => {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
 
   const submit = async (event) => {
     event.preventDefault();
     setError("");
-    if (!required(form.title) || !required(form.description) || !required(form.category) || !required(form.level)) return setError("All course fields are required");
-    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) return setError("Duration must be a positive number");
+
+    if (!required(form.title)) {
+      return setError("Title is required");
+    }
+
+    if (!required(form.description)) {
+      return setError("Description is required");
+    }
+
+    if (!required(form.category)) {
+      return setError("Category is required");
+    }
+
+    if (!required(form.level)) {
+      return setError("Level is required");
+    }
+
+    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) {
+      return setError("Duration must be a positive number");
+    }
 
     try {
-      setSaving(true);
-      await courseApi.updateCourse(id, { ...form, duration_weeks: Number(form.duration_weeks) });
+      setLoading(true);
+
+      await courseApi.updateCourse(id, {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        level: form.level,
+        duration_weeks: Number(form.duration_weeks),
+      });
+
       showToast("Course updated", "success");
       navigate(`/teacher/courses/${id}`);
     } catch (err) {
       setError(parseApiError(err));
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  if (loading) return <Loader label="Loading course" />;
-  if (!form) return <div className="form-error">{error || "Course not found"}</div>;
+  if (pageLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="page-stack narrow-page">
-      <PageHeader title="Edit Course" description="Update the course details shown to students." />
+      <PageHeader
+        title="Edit Course"
+        description="Update course information."
+      />
+
       <form className="form panel-form" onSubmit={submit}>
         {error && <div className="form-error">{error}</div>}
-        <label>Title<input name="title" value={form.title || ""} onChange={update} /></label>
-        <label>Description<textarea name="description" value={form.description || ""} onChange={update} rows="5" /></label>
+
+        <label>
+          Title
+          <input
+            name="title"
+            value={form.title}
+            onChange={update}
+            placeholder="Python Programming"
+          />
+        </label>
+
+        <label>
+          Description
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={update}
+            rows="5"
+            placeholder="Learn Python from basic to advanced"
+          />
+        </label>
+
         <div className="two-column compact">
-          <label>Category<input name="category" value={form.category || ""} onChange={update} /></label>
-          <label>Level<input name="level" value={form.level || ""} onChange={update} /></label>
-          <label>Duration weeks<input type="number" min="1" name="duration_weeks" value={form.duration_weeks || ""} onChange={update} /></label>
+          <label>
+            Category
+            <select name="category" value={form.category} onChange={update}>
+              <option value="">Select category</option>
+
+              {COURSE_CATEGORY_OPTIONS.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Level
+            <select name="level" value={form.level} onChange={update}>
+              <option value="">Select level</option>
+
+              {COURSE_LEVEL_OPTIONS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Duration weeks
+            <input
+              type="number"
+              min="1"
+              name="duration_weeks"
+              value={form.duration_weeks}
+              onChange={update}
+              placeholder="8"
+            />
+          </label>
         </div>
-        <button className="btn btn-primary" type="submit" disabled={saving}>{saving ? "Saving..." : "Save changes"}</button>
+
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {loading ? "Saving..." : "Update course"}
+        </button>
       </form>
     </div>
   );

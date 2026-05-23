@@ -50,6 +50,13 @@ class CourseViewSet(viewsets.ModelViewSet):
     
 
     permission_classes = [IsTeacherCourseOwner]
+    def get_queryset(self):
+        user=self.request.user
+        queryset=Course.objects.all().order_by("created_at")
+        if user.role =="TEACHER":
+            return queryset.filter(created_by=user)
+        return Course.objects.none()
+        
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return CourseCreateSerializer

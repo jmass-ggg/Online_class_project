@@ -52,6 +52,19 @@ class BatchViewSet(viewsets.ModelViewSet):
     lookup_field = "id"
     lookup_url_kwarg = "id"
 
+    def get_queryset(self):
+        user=self.request.user
+        
+        queryset=Batch.objects.select_related("course","teacher").order_by("-created_at")
+        if user.role == "TEACHER":
+            queryset=queryset.filter(teacher=user)
+            
+        course_id = self.request.query_params.get("course")
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+        return queryset
+        
+        
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return BatchCreateSerializer
@@ -62,7 +75,9 @@ class BatchViewSet(viewsets.ModelViewSet):
 
         if user.role != "TEACHER":
             raise PermissionDenied("Only teachers can create batches.")
-
+        course=serializer.validated_data["course"]
+        if course.created_by != user:
+            raise PermissionDenied("You can only create batches for your own course.")
         serializer.save(teacher=user)
 
     def perform_update(self, serializer):
@@ -74,7 +89,9 @@ class BatchViewSet(viewsets.ModelViewSet):
 
         if batch.teacher != user:
             raise PermissionDenied("Only the batch owner can update this batch.")
-
+        course=serializer.validated_data["course"]
+        if course.created_by != user:
+            raise PermissionDenied("You can only create batches for your own course.")
         serializer.save(teacher=user)
 
     def perform_destroy(self, instance):

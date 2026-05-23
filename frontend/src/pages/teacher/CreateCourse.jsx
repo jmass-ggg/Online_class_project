@@ -4,30 +4,71 @@ import PageHeader from "../../components/PageHeader.jsx";
 import { courseApi } from "../../api/courseApi";
 import { useToast } from "../../context/ToastContext.jsx";
 import { parseApiError, required } from "../../utils/validators";
+import {
+  COURSE_CATEGORY_OPTIONS,
+  COURSE_LEVEL_OPTIONS,
+} from "../../utils/constants";
 
-const initialForm = { title: "", description: "", category: "", level: "", duration_weeks: "" };
+const initialForm = {
+  title: "",
+  description: "",
+  category: "",
+  level: "",
+  duration_weeks: "",
+};
 
 export default function CreateCourse() {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const update = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const update = (event) => {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
 
   const submit = async (event) => {
     event.preventDefault();
     setError("");
-    if (!required(form.title)) return setError("Title is required");
-    if (!required(form.description)) return setError("Description is required");
-    if (!required(form.category)) return setError("Category is required");
-    if (!required(form.level)) return setError("Level is required");
-    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) return setError("Duration must be a positive number");
+
+    if (!required(form.title)) {
+      return setError("Title is required");
+    }
+
+    if (!required(form.description)) {
+      return setError("Description is required");
+    }
+
+    if (!required(form.category)) {
+      return setError("Category is required");
+    }
+
+    if (!required(form.level)) {
+      return setError("Level is required");
+    }
+
+    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) {
+      return setError("Duration must be a positive number");
+    }
 
     try {
       setLoading(true);
-      await courseApi.createCourse({ ...form, duration_weeks: Number(form.duration_weeks) });
+
+      await courseApi.createCourse({
+        title: form.title,
+        description: form.description,
+        category: form.category,
+        level: form.level,
+        duration_weeks: Number(form.duration_weeks),
+      });
+
       showToast("Course created", "success");
       navigate("/teacher/courses");
     } catch (err) {
@@ -39,17 +80,78 @@ export default function CreateCourse() {
 
   return (
     <div className="page-stack narrow-page">
-      <PageHeader title="Create Course" description="Add a course that classrooms can be created under." />
+      <PageHeader
+        title="Create Course"
+        description="Add a course that classrooms can be created under."
+      />
+
       <form className="form panel-form" onSubmit={submit}>
         {error && <div className="form-error">{error}</div>}
-        <label>Title<input name="title" value={form.title} onChange={update} placeholder="Python Programming" /></label>
-        <label>Description<textarea name="description" value={form.description} onChange={update} rows="5" placeholder="Learn Python from basic to advanced" /></label>
+
+        <label>
+          Title
+          <input
+            name="title"
+            value={form.title}
+            onChange={update}
+            placeholder="Python Programming"
+          />
+        </label>
+
+        <label>
+          Description
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={update}
+            rows="5"
+            placeholder="Learn Python from basic to advanced"
+          />
+        </label>
+
         <div className="two-column compact">
-          <label>Category<input name="category" value={form.category} onChange={update} placeholder="Programming" /></label>
-          <label>Level<input name="level" value={form.level} onChange={update} placeholder="Beginner" /></label>
-          <label>Duration weeks<input type="number" min="1" name="duration_weeks" value={form.duration_weeks} onChange={update} placeholder="8" /></label>
+          <label>
+            Category
+            <select name="category" value={form.category} onChange={update}>
+              <option value="">Select category</option>
+
+              {COURSE_CATEGORY_OPTIONS.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Level
+            <select name="level" value={form.level} onChange={update}>
+              <option value="">Select level</option>
+
+              {COURSE_LEVEL_OPTIONS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Duration weeks
+            <input
+              type="number"
+              min="1"
+              name="duration_weeks"
+              value={form.duration_weeks}
+              onChange={update}
+              placeholder="8"
+            />
+          </label>
         </div>
-        <button className="btn btn-primary" type="submit" disabled={loading}>{loading ? "Saving..." : "Create course"}</button>
+
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {loading ? "Saving..." : "Create course"}
+        </button>
       </form>
     </div>
   );
