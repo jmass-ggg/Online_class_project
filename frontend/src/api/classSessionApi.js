@@ -13,5 +13,5 @@ export const classSessionApi = {
   joinSession: (id) => axiosClient.post(`${base}${id}/join/`),
   completeSession: (id) => axiosClient.post(`${base}${id}/complete/`),
   cancelSession: (id) => axiosClient.post(`${base}${id}/cancel/`),
-  getAttendance: (id) => axiosClient.get(`${base}${id}/attendance/`)
+  getAttendance: (id) => axiosClient.get(`${base}${id}/attendance/`),
 };

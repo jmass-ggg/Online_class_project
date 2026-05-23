@@ -9,5 +9,6 @@ export const batchApi = {
   updateBatch: (id, data) => axiosClient.put(`${base}${id}/`, data),
   partialUpdateBatch: (id, data) => axiosClient.patch(`${base}${id}/`, data),
   deleteBatch: (id) => axiosClient.delete(`${base}${id}/`),
-  regenerateEnrollmentCode: (id) => axiosClient.post(`${base}${id}/regenerate-code/`)
+  regenerateEnrollmentCode: (id) =>
+    axiosClient.post(`${base}${id}/regenerate-code/`),
 };

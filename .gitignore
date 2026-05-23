@@ -7,3 +7,37 @@ db.sqlite3
 rough.txt
 er_diagram.txt
 frontned.txt
+
+
+
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# VS Code / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment files
+# =========================
+*.env
+.env.*
+
+# =========================
+# Misc
+# =========================
+coverage/
+*.log
