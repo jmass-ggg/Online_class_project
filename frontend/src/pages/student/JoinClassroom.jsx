@@ -26,7 +26,7 @@ export default function JoinClassroom() {
       const batchName = response.data?.data?.batch_name || response.data?.batch_name || "classroom";
       setMessage(`Successfully joined ${batchName}`);
       showToast(`Successfully joined ${batchName}`, "success");
-      window.setTimeout(() => navigate("/student/dashboard"), 900);
+      window.setTimeout(() => navigate("/student/batches"), 900);
     } catch (err) {
       setError(parseApiError(err, "Invalid code, already enrolled, classroom inactive, or login required"));
     } finally {

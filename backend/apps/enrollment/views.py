@@ -1,9 +1,11 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework import status
-from .serializers import JoinClassroomSerializer
+from .serializers import JoinClassroomSerializer,EnrollmentListSerializer
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from apps.users.permissions import IsStudent
+from apps.enrollment.models import Enrollment
 
 class JoinClassViewSet(APIView):
     @extend_schema(
@@ -51,3 +53,16 @@ class JoinClassViewSet(APIView):
                 "status": enrollment.status,
             }
         }, status=status.HTTP_201_CREATED)
+        
+class MyClassroomView(generics.ListAPIView):
+    permission_classes=[IsStudent]
+    serializer_class=EnrollmentListSerializer
+    
+    def get_queryset(self):
+        return Enrollment.objects.select_related(
+            "batch",
+            "batch__teacher",
+            "batch__course",
+        ).filter(
+            student=self.request.user
+        )

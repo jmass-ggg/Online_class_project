@@ -3,7 +3,7 @@ from apps.users.models import StudentProfile
 from apps.users.models import User
 from apps.batch.models import Batch
 from .models import Enrollment
-
+from apps.batch.serializers import BatchSerializer
 class JoinClassroomSerializer(serializers.Serializer):
     join_code=serializers.CharField()
     
@@ -27,3 +27,15 @@ class JoinClassroomSerializer(serializers.Serializer):
 
         return enrollment
     
+class EnrollmentListSerializer(serializers.ModelSerializer):
+    batch = BatchSerializer(read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = [
+            "id",
+            "batch",
+            "status",
+            "enrolled_at",
+            "updated_at",
+        ]

@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/PageHeader.jsx";
 import Loader from "../../components/Loader.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import SessionCard from "../../components/SessionCard.jsx";
 import { classSessionApi } from "../../api/classSessionApi";
+import { enrollmentApi } from "../../api/enrollmentApi";
 import { useToast } from "../../context/ToastContext.jsx";
 import { parseApiError } from "../../utils/validators";
 import { saveLiveKitSession } from "../../utils/livekitHelpers";
-import { useNavigate } from "react-router-dom";
+import {
+  enrollmentToBatch,
+  getSessionBatchId,
+} from "../../utils/enrollmentHelpers";
 
 const filters = ["ALL", "UPCOMING", "LIVE", "COMPLETED", "CANCELLED"];
 
@@ -21,18 +26,34 @@ export default function StudentSessions() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await classSessionApi.getSessions();
-        setSessions(response.data || []);
+        const [enrollmentsRes, sessionsRes] = await Promise.all([
+          enrollmentApi.getMyClassrooms(),
+          classSessionApi.getSessions(),
+        ]);
+
+        const myBatches = (enrollmentsRes.data || []).map(enrollmentToBatch);
+        const myBatchIds = myBatches.map((batch) => String(batch.id));
+
+        const mySessions = (sessionsRes.data || []).filter((session) =>
+          myBatchIds.includes(getSessionBatchId(session))
+        );
+
+        setSessions(mySessions);
       } catch (err) {
-        showToast(parseApiError(err), "error");
+        showToast(parseApiError(err, "Could not load live classes"), "error");
       } finally {
         setLoading(false);
       }
     }
+
     load();
   }, [showToast]);
 
-  const filteredSessions = useMemo(() => filter === "ALL" ? sessions : sessions.filter((session) => session.status === filter), [sessions, filter]);
+  const filteredSessions = useMemo(() => {
+    if (filter === "ALL") return sessions;
+
+    return sessions.filter((session) => session.status === filter);
+  }, [sessions, filter]);
 
   const joinSession = async (session) => {
     try {
@@ -48,9 +69,38 @@ export default function StudentSessions() {
 
   return (
     <div className="page-stack">
-      <PageHeader title="Live Classes" description="Join live sessions and review class status." />
-      <div className="filter-tabs">{filters.map((item) => <button key={item} className={filter === item ? "active" : ""} type="button" onClick={() => setFilter(item)}>{item}</button>)}</div>
-      {filteredSessions.length ? <div className="card-grid">{filteredSessions.map((session) => <SessionCard key={session.id} session={session} role="student" onJoin={joinSession} />)}</div> : <EmptyState title="No live classes scheduled" />}
+      <PageHeader
+        title="Live Classes"
+        description="Join live sessions from your enrolled classrooms."
+      />
+
+      <div className="filter-tabs">
+        {filters.map((item) => (
+          <button
+            key={item}
+            className={filter === item ? "active" : ""}
+            type="button"
+            onClick={() => setFilter(item)}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {filteredSessions.length ? (
+        <div className="card-grid">
+          {filteredSessions.map((session) => (
+            <SessionCard
+              key={session.id}
+              session={session}
+              role="student"
+              onJoin={joinSession}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState title="No live classes scheduled" />
+      )}
     </div>
   );
 }
