@@ -13,6 +13,9 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [selectedRole, setSelectedRole] = useState("STUDENT");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -74,56 +77,109 @@ export default function Login() {
   };
 
   return (
-    <section className="auth-card">
-      <div className="auth-brand">
-        <div className="brand-mark">CL</div>
-        <span>Classroom Live</span>
-      </div>
+    <main className="split-auth-page login-page">
+      <section className="auth-visual auth-visual-login">
+        <div className="visual-overlay" />
+        <div className="visual-content">
+          <div className="visual-brand">
+            <span>▱</span>
+            <strong>TeachNest</strong>
+          </div>
+          <p>
+            Empowering educators and students with a unified, intuitive learning
+            ecosystem designed for focused growth.
+          </p>
+        </div>
+      </section>
 
-      <h1>Login to your classroom</h1>
-      <p>Use your teacher or student account to continue.</p>
+      <section className="auth-form-side">
+        <div className="auth-panel login-panel">
+          <h1>Welcome to TeachNest LMS</h1>
+          <p>Log in to continue to your dashboard.</p>
 
-      <form className="form" onSubmit={submit}>
-        {error && <div className="form-error">{error}</div>}
+          <div className="role-toggle">
+            <button
+              type="button"
+              className={selectedRole === "STUDENT" ? "active" : ""}
+              onClick={() => setSelectedRole("STUDENT")}
+            >
+              I’m a Student
+            </button>
+            <button
+              type="button"
+              className={selectedRole === "TEACHER" ? "active" : ""}
+              onClick={() => setSelectedRole("TEACHER")}
+            >
+              I’m a Teacher
+            </button>
+          </div>
 
-        <label>
-          Email
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={update}
-            placeholder="you@example.com"
-            autoComplete="email"
-          />
-        </label>
+          <form className="auth-form" onSubmit={submit}>
+            {error && <div className="form-error">{error}</div>}
 
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={update}
-            placeholder="••••••••"
-            autoComplete="current-password"
-          />
-        </label>
+            <label>
+              Email Address
+              <div className="input-with-icon">
+                <span>✉</span>
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={update}
+                  placeholder="name@example.com"
+                  autoComplete="email"
+                />
+              </div>
+            </label>
 
-        <button
-          className="btn btn-primary btn-block"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+            <label>
+              <span className="label-row">
+                Password
+                <Link to="/login" className="small-link">Forgot password?</Link>
+              </span>
 
-      <div className="auth-switch">
-        <span>New here?</span>
-        <Link to="/register/teacher">Teacher register</Link>
-        <Link to="/register/student">Student register</Link>
-      </div>
-    </section>
+              <div className="input-with-icon">
+                <span>▣</span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={update}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="input-eye"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </button>
+              </div>
+            </label>
+
+            <button className="auth-primary-button" type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login →"}
+            </button>
+          </form>
+
+          <div className="auth-divider">
+            <span />
+            <p>OR CONTINUE WITH</p>
+            <span />
+          </div>
+
+          <div className="social-row">
+            <button type="button">G&nbsp; Google</button>
+            <button type="button">&nbsp; Apple</button>
+          </div>
+
+          <p className="auth-bottom-text">
+            Don’t have an account? <Link to="/">Sign up</Link>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }

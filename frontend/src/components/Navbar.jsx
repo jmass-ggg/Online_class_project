@@ -10,20 +10,43 @@ export default function Navbar({ onMenuClick }) {
     navigate("/login", { replace: true });
   };
 
+  const roleLabel = user?.role === "TEACHER" ? "Teacher Workspace" : "Student Workspace";
+
   return (
     <header className="topbar">
-      <button className="icon-button menu-button" type="button" onClick={onMenuClick} aria-label="Open menu">☰</button>
-      <div>
-        <p className="topbar-kicker">Classroom Live</p>
-        <h1>{user?.role === "TEACHER" ? "Teacher workspace" : "Student workspace"}</h1>
+      <div className="topbar-left">
+        <button
+          className="icon-button menu-button"
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
+
+        <div>
+          <p className="topbar-kicker">TeachNest LMS</p>
+          <h1>{roleLabel}</h1>
+        </div>
       </div>
+
       <div className="topbar-user">
-        <div className="avatar" aria-hidden="true">{user?.full_name?.charAt(0)?.toUpperCase() || "U"}</div>
+        <button className="topbar-icon" type="button" aria-label="Notifications">
+          🔔
+        </button>
+
+        <div className="avatar" aria-hidden="true">
+          {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+        </div>
+
         <div className="topbar-user-meta">
           <strong>{user?.full_name || "User"}</strong>
           <span>{user?.email}</span>
         </div>
-        <button className="btn btn-secondary" type="button" onClick={handleLogout}>Logout</button>
+
+        <button className="btn btn-secondary" type="button" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
     </header>
   );

@@ -10,10 +10,10 @@ import {
 } from "../utils/validators";
 
 const initialForm = {
-  full_name: "",
+  first_name: "",
+  last_name: "",
   email: "",
   password: "",
-  confirm_password: "",
   phone: "",
   address: "",
   date_of_birth: "",
@@ -22,6 +22,8 @@ const initialForm = {
 
 export default function RegisterStudent() {
   const [form, setForm] = useState(initialForm);
+  const [activeTab, setActiveTab] = useState("account");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,17 +32,20 @@ export default function RegisterStudent() {
 
   const update = (event) => {
     const { name, value } = event.target;
+
     setForm((current) => ({
       ...current,
       [name]: value,
     }));
   };
 
+  const fullName = `${form.first_name} ${form.last_name}`.trim();
+
   const submit = async (event) => {
     event.preventDefault();
     setError("");
 
-    if (!required(form.full_name)) {
+    if (!required(fullName)) {
       return setError("Full name is required");
     }
 
@@ -48,17 +53,14 @@ export default function RegisterStudent() {
       return setError("A valid email is required");
     }
 
-    const passwordError = validatePasswords(
-      form.password,
-      form.confirm_password
-    );
+    const passwordError = validatePasswords(form.password, form.password);
 
     if (passwordError) {
       return setError(passwordError);
     }
 
     const payload = {
-      full_name: form.full_name.trim(),
+      full_name: fullName,
       email: form.email.trim().toLowerCase(),
       password: form.password,
       phone: form.phone.trim(),
@@ -88,112 +90,186 @@ export default function RegisterStudent() {
   };
 
   return (
-    <section className="auth-card auth-card-wide">
-      <div className="auth-brand">
-        <div className="brand-mark">CL</div>
-        <span>Student Registration</span>
-      </div>
+    <main className="split-auth-page">
+      <section className="auth-visual auth-visual-student">
+  <div className="student-photo-card">
+    <img
+      src="/studentphoto.webp"
+      alt="Student learning online"
+      className="auth-side-photo"
+    />
+  </div>
 
-      <h1>Create your student account</h1>
-      <p>Join classrooms with an enrollment code after logging in.</p>
+  <div className="floating-caption">
+    <h2>Empowering Student Success</h2>
+    <p>
+      Join a global community of learners. Access top-tier resources,
+      connect with expert educators, and track your progress in real time.
+    </p>
+  </div>
+</section>
+      <section className="auth-form-side">
+        <div className="auth-panel">
+          <div className="small-auth-icon">🎓</div>
 
-      <form className="form two-column" onSubmit={submit}>
-        {error && <div className="form-error span-2">{error}</div>}
+          <h1>Create Student Account</h1>
+          <p>Fill in your details to join your classroom</p>
 
-        <label>
-          Full name
-          <input
-            name="full_name"
-            value={form.full_name}
-            onChange={update}
-            placeholder="Ram Student"
-          />
-        </label>
+          <div className="social-row">
+            <button type="button">G&nbsp; Google</button>
+            <button type="button">&nbsp; Apple</button>
+          </div>
 
-        <label>
-          Email
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={update}
-            placeholder="student@example.com"
-          />
-        </label>
+          <div className="auth-divider">
+            <span />
+            <p>OR REGISTER WITH EMAIL</p>
+            <span />
+          </div>
 
-        <label>
-          Password
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={update}
-          />
-        </label>
+          <div className="form-tabs">
+            <button
+              type="button"
+              className={activeTab === "account" ? "active" : ""}
+              onClick={() => setActiveTab("account")}
+            >
+              Account Info
+            </button>
+            <button
+              type="button"
+              className={activeTab === "profile" ? "active" : ""}
+              onClick={() => setActiveTab("profile")}
+            >
+              Student Details
+            </button>
+          </div>
 
-        <label>
-          Confirm password
-          <input
-            type="password"
-            name="confirm_password"
-            value={form.confirm_password}
-            onChange={update}
-          />
-        </label>
+          <form className="auth-form" onSubmit={submit}>
+            {error && <div className="form-error">{error}</div>}
 
-        <label>
-          Phone
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={update}
-            placeholder="Phone number"
-          />
-        </label>
+            {activeTab === "account" && (
+              <>
+                <div className="two-column compact">
+                  <label>
+                    First Name
+                    <input
+                      name="first_name"
+                      value={form.first_name}
+                      onChange={update}
+                      placeholder="Jane"
+                    />
+                  </label>
 
-        <label>
-          Date of birth
-          <input
-            type="date"
-            name="date_of_birth"
-            value={form.date_of_birth}
-            onChange={update}
-          />
-        </label>
+                  <label>
+                    Last Name
+                    <input
+                      name="last_name"
+                      value={form.last_name}
+                      onChange={update}
+                      placeholder="Doe"
+                    />
+                  </label>
+                </div>
 
-        <label>
-          Guardian name
-          <input
-            name="guardian_name"
-            value={form.guardian_name}
-            onChange={update}
-            placeholder="Guardian name"
-          />
-        </label>
+                <label>
+                  Email Address
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={update}
+                    placeholder="jane.doe@example.com"
+                  />
+                </label>
 
-        <label>
-          Address
-          <input
-            name="address"
-            value={form.address}
-            onChange={update}
-            placeholder="Address"
-          />
-        </label>
+                <label>
+                  Password
+                  <div className="password-field">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={form.password}
+                      onChange={update}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                    >
+                      {showPassword ? "🙈" : "👁"}
+                    </button>
+                  </div>
+                </label>
 
-        <button
-          className="btn btn-primary btn-block span-2"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Creating account..." : "Register as student"}
-        </button>
-      </form>
+                <button
+                  className="auth-primary-button"
+                  type="button"
+                  onClick={() => setActiveTab("profile")}
+                >
+                  Next →
+                </button>
+              </>
+            )}
 
-      <div className="auth-switch">
-        <span>Already registered?</span>
-        <Link to="/login">Login</Link>
-      </div>
-    </section>
+            {activeTab === "profile" && (
+              <>
+                <label>
+                  Phone Number
+                  <input
+                    name="phone"
+                    value={form.phone}
+                    onChange={update}
+                    placeholder="+1 (555) 000-0000"
+                  />
+                </label>
+
+                <label>
+                  Date of Birth
+                  <input
+                    type="date"
+                    name="date_of_birth"
+                    value={form.date_of_birth}
+                    onChange={update}
+                  />
+                </label>
+
+                <label>
+                  Guardian Name
+                  <input
+                    name="guardian_name"
+                    value={form.guardian_name}
+                    onChange={update}
+                    placeholder="Guardian name"
+                  />
+                </label>
+
+                <label>
+                  Address
+                  <input
+                    name="address"
+                    value={form.address}
+                    onChange={update}
+                    placeholder="Address"
+                  />
+                </label>
+
+                
+
+                <button
+                  className="auth-primary-button"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? "Creating account..." : "Create Account →"}
+                </button>
+              </>
+            )}
+          </form>
+
+          <p className="auth-bottom-text">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }

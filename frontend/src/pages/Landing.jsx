@@ -5,42 +5,76 @@ import { homeForRole } from "../utils/roleHelpers";
 export default function Landing() {
   const { user, isAuthenticated } = useAuth();
 
-  if (isAuthenticated && user?.role) return <Navigate to={homeForRole(user.role)} replace />;
+  if (isAuthenticated && user?.role) {
+    return <Navigate to={homeForRole(user.role)} replace />;
+  }
 
   return (
-    <section className="landing-page">
-      <nav className="landing-nav">
-        <div className="brand brand-light"><div className="brand-mark">CL</div><strong>Classroom Live</strong></div>
-        <div className="landing-actions">
-          <Link className="btn btn-secondary" to="/login">Login</Link>
-          <Link className="btn btn-primary" to="/register/teacher">Start teaching</Link>
+    <main className="public-page">
+      <header className="public-navbar">
+        <Link to="/" className="public-logo">
+          <span className="logo-icon">⌂</span>
+          <span>TeachNest</span>
+        </Link>
+
+        <nav className="public-links">
+          <a href="#about">About Us</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact Us</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#blog">Blog</a>
+        </nav>
+
+        <div className="public-actions">
+          <Link className="nav-login" to="/login">Log in</Link>
+          <Link className="nav-signup" to="/register/teacher">Sign Up</Link>
         </div>
-      </nav>
-      <div className="landing-hero">
-        <div className="hero-copy">
-          <span className="eyebrow">Online classroom + video meetings</span>
-          <h1>Teach, enroll, stream, and track attendance from one professional dashboard.</h1>
+      </header>
+
+      <section className="role-hero">
+        <div className="role-hero-copy">
+          <h1>Welcome to TeachNest</h1>
           <p>
-            A Google Classroom and Zoom inspired frontend for Django REST Framework and LiveKit, built with role-based workflows for teachers and students.
+            Select your role to personalize your experience and start connecting
+            with your educational community.
           </p>
-          <div className="hero-actions">
-            <Link className="btn btn-primary btn-large" to="/register/teacher">Create teacher account</Link>
-            <Link className="btn btn-secondary btn-large" to="/register/student">Create student account</Link>
-          </div>
         </div>
-        <div className="hero-panel">
-          <div className="hero-window-bar"><span /><span /><span /></div>
-          <div className="hero-dashboard-preview">
-            <div className="preview-sidebar" />
-            <div className="preview-content">
-              <div className="preview-line wide" />
-              <div className="preview-stats"><span /><span /><span /></div>
-              <div className="preview-card"><strong>Python Morning Batch</strong><em>LIVE</em></div>
-              <div className="preview-card muted"><strong>Enrollment code</strong><em>PYT8X2</em></div>
-            </div>
-          </div>
+
+        <div className="role-card-grid">
+          <article className="role-card">
+            <div className="role-icon">🎓</div>
+            <h2>I am a Student</h2>
+            <p>Access courses, track your progress, and collaborate with peers.</p>
+            <Link className="role-button" to="/register/student">
+              Join as Student
+            </Link>
+          </article>
+
+          <article className="role-card">
+            <div className="role-icon">🧑‍🏫</div>
+            <h2>I am a Teacher</h2>
+            <p>Create classrooms, manage resources, and inspire your students.</p>
+            <Link className="role-button" to="/register/teacher">
+              Join as Teacher
+            </Link>
+          </article>
         </div>
-      </div>
-    </section>
+
+        <p className="role-login-text">
+          Already have an account? <Link to="/login">Log in here</Link>
+        </p>
+      </section>
+
+      <footer className="public-footer">
+        <strong>TeachNest</strong>
+        <span>© 2024 TeachNest LMS. Empowering educators and students globally.</span>
+        <div>
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms of Service</a>
+          <a href="#cookies">Cookie Policy</a>
+          <a href="#accessibility">Accessibility</a>
+        </div>
+      </footer>
+    </main>
   );
 }
