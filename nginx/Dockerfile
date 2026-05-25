@@ -1,0 +1,19 @@
+FROM node:20-alpine AS frontend_builder
+
+WORKDIR /frontend
+
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ .
+
+ENV VITE_API_BASE_URL=/api
+
+RUN npm run build
+
+
+FROM nginx:1.27-alpine
+
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=frontend_builder /frontend/dist /usr/share/nginx/html
