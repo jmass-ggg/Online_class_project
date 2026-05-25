@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.batch',
     'apps.enrollment',
     "apps.class_sessions","corsheaders",
+    "apps.StudyMaterial"
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'My API',
     'DESCRIPTION': 'API documentation for my project',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_INCLUDE_SCHEMA': False, "COMPONENT_SPLIT_REQUEST": True,
 }
 ROOT_URLCONF = 'config.urls'
 

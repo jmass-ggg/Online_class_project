@@ -12,6 +12,7 @@ from drf_spectacular.views import(
 from apps.courses.views import CourseViewSet
 from apps.batch.views import BatchViewSet
 from apps.class_sessions.views import ClassSessionViewSet
+from apps.StudyMaterial.views import StudyMaterialViewSet
 router=DefaultRouter()
 router.register(
     r"auth/teacher",
@@ -45,6 +46,11 @@ router.register(
     r"ClassSession",
     ClassSessionViewSet,
     basename="ClassSession"
+)
+router.register(
+    r"StudyMaterial",
+    StudyMaterialViewSet,
+    basename="StudyMaterial"
 )
 urlpatterns = [
     path('admin/', admin.site.urls),
