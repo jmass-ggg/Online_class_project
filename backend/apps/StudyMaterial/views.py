@@ -15,9 +15,9 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from .serializer import StudyMaterialImageserializer,StudyMaterialserializer
-from .models import StudyMaterial,StudyMaterialAttachment
-from apps.users.permissions import IsTeacherCourseOwner
+from .serializer import StudyMaterialImageserializer,StudyMaterialserializer,SubmissionSerializers
+from .models import StudyMaterial,StudyMaterialAttachment,Submission
+from apps.users.permissions import IsTeacherCourseOwner,IsStudent
 
 @extend_schema_view(
     list=extend_schema(
@@ -93,3 +93,30 @@ class StudyMaterialViewSet(viewsets.ModelViewSet):
         serializer.save(
             upload_by=self.request.user
         )        
+        
+class StudentSubmissionView(viewsets.ModelViewSet):
+    queryset=Submission.objects.all()
+    serializer_class=SubmissionSerializers
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes=[IsStudent]
+    def get_queryset(self):
+        user=self.request.user
+        queryset=(
+            Submission.objects.select_related("assignment").order_by("submitted_at")
+            
+        )
+        if user.role == "STUDENT":
+            queryset=queryset.filter(
+                student=user
+            )
+        elif user.role == "TEACHER":
+            queryset=queryset.filter(
+                assignment__upload_by=user
+            )
+        else:
+            return Submission.objects.none()
+        return queryset.distinct()
+    def perform_create(self, serializer):
+        serializer.save(
+            student=self.request.user
+        )

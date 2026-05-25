@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import StudyMaterial, StudyMaterialAttachment
+from .models import StudyMaterial, StudyMaterialAttachment,Submission
 
 
 class StudyMaterialImageserializer(serializers.ModelSerializer):
@@ -60,3 +60,30 @@ class StudyMaterialserializer(serializers.ModelSerializer):
             )
 
         return study_material
+    
+class SubmissionSerializers(serializers.ModelSerializer):
+    student_name=serializers.CharField(
+        source="student.full_name",
+        read_only=True
+    )
+    assignment_title=serializers.CharField(
+          source="assignment.title",
+        read_only=True
+    )
+    class Meta:
+        model = Submission
+        fields = [
+            "id",
+            "assignment",
+            "assignment_title",
+            "student",
+            "student_name",
+            "submitted_file",
+            "submitted_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "student",
+            "submitted_at",
+        ]

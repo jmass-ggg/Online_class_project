@@ -76,4 +76,8 @@ class Submission(models.Model):
         null=True,
         related_name="submission"
     )
-    
+    submitted_file=models.FileField(
+        upload_to="submited/",
+        validators=[validate_file_extension]
+    )
+    submitted_at=models.DateTimeField(auto_now=True)
