@@ -1,13 +1,13 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import StudyMaterial, StudyMaterialImages
+from .models import StudyMaterial, StudyMaterialAttachment
 
 
 class StudyMaterialImageserializer(serializers.ModelSerializer):
     class Meta:
-        model = StudyMaterialImages
-        fields = ["id", "image"]
+        model = StudyMaterialAttachment
+        fields = ["id", "file"]
 
 
 class StudyMaterialserializer(serializers.ModelSerializer):
@@ -17,7 +17,7 @@ class StudyMaterialserializer(serializers.ModelSerializer):
     )
 
     uploaded_images = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.FileField(),
         write_only=True,
         required=False
     )
@@ -54,9 +54,9 @@ class StudyMaterialserializer(serializers.ModelSerializer):
         study_material = StudyMaterial.objects.create(**validated_data)
 
         for img in images:
-            StudyMaterialImages.objects.create(
+            StudyMaterialAttachment.objects.create(
                 study_material=study_material,
-                image=img
+                file=img
             )
 
         return study_material

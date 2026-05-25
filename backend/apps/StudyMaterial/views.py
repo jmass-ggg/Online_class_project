@@ -16,7 +16,7 @@ from drf_spectacular.utils import (
     extend_schema_view,
 )
 from .serializer import StudyMaterialImageserializer,StudyMaterialserializer
-from .models import StudyMaterial,StudyMaterialImages
+from .models import StudyMaterial,StudyMaterialAttachment
 from apps.users.permissions import IsTeacherCourseOwner
 
 @extend_schema_view(
@@ -61,13 +61,13 @@ class StudyMaterialViewSet(viewsets.ModelViewSet):
     queryset=StudyMaterial.objects.all()
     serializer_class=StudyMaterialserializer
     parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTeacherCourseOwner]
     def get_queryset(self):
         user=self.request.user
         queryset = (
             StudyMaterial.objects
             .select_related("classroom", "upload_by")
-            .prefetch_related("images")
+            .prefetch_related("file")
             .order_by("-upload_at")
         )
         classroom_id=self.request.query_params.get(
