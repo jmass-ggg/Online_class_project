@@ -10,11 +10,10 @@ const initialForm = {
   course: "",
   name: "",
   description: "",
-  max_students: 50,
+  max_students: 20,
   allow_self_enrollment: true,
   is_active: true,
   start_date: "",
-  end_date: "",
 };
 
 export default function CreateBatch() {
@@ -75,15 +74,11 @@ export default function CreateBatch() {
     }
 
     if (!required(form.name)) {
-      return setError("Classroom name is required");
+      return setError("Batch name is required");
     }
 
     if (!required(form.start_date)) {
       return setError("Start date is required");
-    }
-
-    if (!required(form.end_date)) {
-      return setError("End date is required");
     }
 
     const payload = {
@@ -94,7 +89,6 @@ export default function CreateBatch() {
       allow_self_enrollment: Boolean(form.allow_self_enrollment),
       is_active: Boolean(form.is_active),
       start_date: form.start_date,
-      end_date: form.end_date,
     };
 
     try {
@@ -102,10 +96,10 @@ export default function CreateBatch() {
 
       await batchApi.createBatch(payload);
 
-      showToast("Classroom created successfully", "success");
+      showToast("Batch created successfully", "success");
       navigate("/teacher/batches", { replace: true });
     } catch (err) {
-      setError(parseApiError(err, "Could not create classroom"));
+      setError(parseApiError(err, "Could not create batch"));
     } finally {
       setLoading(false);
     }
@@ -120,8 +114,8 @@ export default function CreateBatch() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Classroom Live</p>
-          <h1>Create classroom</h1>
-          <p>Create a Google Classroom style learning space under a course.</p>
+          <h1>Create batch</h1>
+          <p>Create a learning batch under a course.</p>
         </div>
       </div>
 
@@ -143,7 +137,7 @@ export default function CreateBatch() {
           </label>
 
           <label>
-            Name
+            Batch name
             <input
               name="name"
               value={form.name}
@@ -158,7 +152,7 @@ export default function CreateBatch() {
               name="description"
               value={form.description}
               onChange={update}
-              placeholder="Describe this classroom"
+              placeholder="Describe this batch"
               rows="4"
             />
           </label>
@@ -184,16 +178,6 @@ export default function CreateBatch() {
                 onChange={update}
               />
             </label>
-
-            <label>
-              End date
-              <input
-                type="date"
-                name="end_date"
-                value={form.end_date}
-                onChange={update}
-              />
-            </label>
           </div>
 
           <label className="checkbox-row">
@@ -213,7 +197,7 @@ export default function CreateBatch() {
               checked={form.is_active}
               onChange={update}
             />
-            Classroom is active
+            Batch is active
           </label>
 
           <button
@@ -221,7 +205,7 @@ export default function CreateBatch() {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Creating classroom..." : "Create classroom"}
+            {loading ? "Creating batch..." : "Create batch"}
           </button>
         </form>
       </div>

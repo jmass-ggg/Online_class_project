@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { batchApi } from "../../api/batchApi";
 import { classSessionApi } from "../../api/classSessionApi";
@@ -8,11 +8,41 @@ import { parseApiError, required } from "../../utils/validators";
 
 const initialForm = {
   classroom: "",
-  title: "",
-  description: "",
   scheduled_date: "",
   start_time: "",
   end_time: "",
+};
+
+const pad = (value) => String(value).padStart(2, "0");
+
+const getTodayDate = () => {
+  const now = new Date();
+
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+  ].join("-");
+};
+
+const getCurrentTime = () => {
+  const now = new Date();
+
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+};
+
+const normalizeTime = (value) => {
+  if (!value) return "";
+  return value.length === 5 ? `${value}:00` : value;
+};
+
+const isPastDateTime = (date, time) => {
+  if (!date || !time) return false;
+
+  const selectedDateTime = new Date(`${date}T${time}`);
+  const now = new Date();
+
+  return selectedDateTime < now;
 };
 
 export default function CreateSession() {
@@ -25,6 +55,12 @@ export default function CreateSession() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+
+  const today = useMemo(() => getTodayDate(), []);
+  const currentTime = getCurrentTime();
+
+  const minStartTime =
+    form.scheduled_date === today ? currentTime : undefined;
 
   useEffect(() => {
     const loadBatches = async () => {
@@ -58,15 +94,23 @@ export default function CreateSession() {
   const update = (event) => {
     const { name, value } = event.target;
 
-    setForm((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
+    setForm((current) => {
+      const next = {
+        ...current,
+        [name]: value,
+      };
 
-  const normalizeTime = (value) => {
-    if (!value) return "";
-    return value.length === 5 ? `${value}:00` : value;
+      if (name === "scheduled_date") {
+        next.start_time = "";
+        next.end_time = "";
+      }
+
+      if (name === "start_time") {
+        next.end_time = "";
+      }
+
+      return next;
+    });
   };
 
   const submit = async (event) => {
@@ -77,26 +121,32 @@ export default function CreateSession() {
       return setError("Please select a classroom");
     }
 
-    if (!required(form.title)) {
-      return setError("Title is required");
-    }
-
     if (!required(form.scheduled_date)) {
       return setError("Scheduled date is required");
+    }
+
+    if (form.scheduled_date < today) {
+      return setError("Scheduled date cannot be before today");
     }
 
     if (!required(form.start_time)) {
       return setError("Start time is required");
     }
 
+    if (isPastDateTime(form.scheduled_date, form.start_time)) {
+      return setError("Start time cannot be before the current time");
+    }
+
     if (!required(form.end_time)) {
       return setError("End time is required");
     }
 
+    if (form.start_time >= form.end_time) {
+      return setError("End time must be after start time");
+    }
+
     const payload = {
       classroom: form.classroom,
-      title: form.title.trim(),
-      description: form.description.trim(),
       scheduled_date: form.scheduled_date,
       start_time: normalizeTime(form.start_time),
       end_time: normalizeTime(form.end_time),
@@ -151,27 +201,6 @@ export default function CreateSession() {
             </select>
           </label>
 
-          <label>
-            Title
-            <input
-              name="title"
-              value={form.title}
-              onChange={update}
-              placeholder="Introduction to Python"
-            />
-          </label>
-
-          <label>
-            Description
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={update}
-              placeholder="Describe this live class"
-              rows="4"
-            />
-          </label>
-
           <div className="form-row">
             <label>
               Scheduled date
@@ -179,6 +208,7 @@ export default function CreateSession() {
                 type="date"
                 name="scheduled_date"
                 value={form.scheduled_date}
+                min={today}
                 onChange={update}
               />
             </label>
@@ -189,7 +219,9 @@ export default function CreateSession() {
                 type="time"
                 name="start_time"
                 value={form.start_time}
+                min={minStartTime}
                 onChange={update}
+                disabled={!form.scheduled_date}
               />
             </label>
 
@@ -199,12 +231,18 @@ export default function CreateSession() {
                 type="time"
                 name="end_time"
                 value={form.end_time}
+                min={form.start_time || minStartTime}
                 onChange={update}
+                disabled={!form.start_time}
               />
             </label>
           </div>
 
-          <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
+          <button
+            className="btn btn-primary btn-block"
+            type="submit"
+            disabled={loading}
+          >
             {loading ? "Creating live class..." : "Create live class"}
           </button>
         </form>
