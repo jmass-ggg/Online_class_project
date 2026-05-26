@@ -31,8 +31,7 @@ class ClassSession(models.Model):
         limit_choices_to={"role": "TEACHER"}
     )
 
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
+   
 
     scheduled_date = models.DateField()
     start_time = models.TimeField()
@@ -71,7 +70,7 @@ class ClassSession(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} - {self.classroom.name}"
+        return f"Session {self.classroom.name} ({self.scheduled_date})"
             
 class ClassSessionAttendance(models.Model):
     id = models.UUIDField(
@@ -108,4 +107,4 @@ class ClassSessionAttendance(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.student} attended {self.session.title}"
+        return f"{self.student} attended session {self.session.id}"
