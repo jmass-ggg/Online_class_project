@@ -7,7 +7,14 @@ import { homeForRole } from "../utils/roleHelpers";
 import { parseApiError, required, validateEmail } from "../utils/validators";
 
 export default function Login() {
-  const { login, isAuthenticated, user, loading: authLoading } = useAuth();
+  const {
+    login,
+    logout,
+    isAuthenticated,
+    user,
+    loading: authLoading,
+  } = useAuth();
+
   const { showToast } = useToast();
 
   const navigate = useNavigate();
@@ -45,7 +52,9 @@ export default function Login() {
     event.preventDefault();
     setError("");
 
-    if (!validateEmail(form.email)) {
+    const email = form.email.trim().toLowerCase();
+
+    if (!validateEmail(email)) {
       return setError("A valid email is required");
     }
 
@@ -57,9 +66,18 @@ export default function Login() {
       setLoading(true);
 
       const nextUser = await login({
-        email: form.email.trim().toLowerCase(),
+        email,
         password: form.password,
+        role: selectedRole,
       });
+
+      if (nextUser?.role !== selectedRole) {
+        if (typeof logout === "function") {
+          logout();
+        }
+
+        return setError("Invalid Credentials");
+      }
 
       showToast("Welcome back", "success");
 
@@ -70,7 +88,7 @@ export default function Login() {
         replace: true,
       });
     } catch (err) {
-      setError(parseApiError(err, "Invalid email or password"));
+      setError(parseApiError(err, "Invalid Credentials"));
     } finally {
       setLoading(false);
     }
@@ -80,11 +98,13 @@ export default function Login() {
     <main className="split-auth-page login-page">
       <section className="auth-visual auth-visual-login">
         <div className="visual-overlay" />
+
         <div className="visual-content">
           <div className="visual-brand">
             <span>▱</span>
             <strong>TeachNest</strong>
           </div>
+
           <p>
             Empowering educators and students with a unified, intuitive learning
             ecosystem designed for focused growth.
@@ -105,6 +125,7 @@ export default function Login() {
             >
               I’m a Student
             </button>
+
             <button
               type="button"
               className={selectedRole === "TEACHER" ? "active" : ""}
@@ -119,8 +140,10 @@ export default function Login() {
 
             <label>
               Email Address
+
               <div className="input-with-icon">
                 <span>✉</span>
+
                 <input
                   type="email"
                   name="email"
@@ -135,11 +158,15 @@ export default function Login() {
             <label>
               <span className="label-row">
                 Password
-                <Link to="/login" className="small-link">Forgot password?</Link>
+
+                <Link to="/login" className="small-link">
+                  Forgot password?
+                </Link>
               </span>
 
               <div className="input-with-icon">
                 <span>▣</span>
+
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -148,6 +175,7 @@ export default function Login() {
                   placeholder="••••••••"
                   autoComplete="current-password"
                 />
+
                 <button
                   type="button"
                   className="input-eye"
@@ -159,7 +187,11 @@ export default function Login() {
               </div>
             </label>
 
-            <button className="auth-primary-button" type="submit" disabled={loading}>
+            <button
+              className="auth-primary-button"
+              type="submit"
+              disabled={loading}
+            >
               {loading ? "Logging in..." : "Login →"}
             </button>
           </form>

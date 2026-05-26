@@ -4,6 +4,7 @@ import string
 import secrets
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from .time_calculdate import calculate_course_datetime
 
 def generate_enrollment_code(length=6):
     characters = string.ascii_uppercase + string.digits
@@ -55,7 +56,10 @@ class Batch(models.Model):
     def save(self, *args, **kwargs):
         if not self.enrollment_code:
             self.enrollment_code = generate_enrollment_code()
-
+        if self.start_date and self.course:
+            self.end_date=calculate_course_datetime(
+                self.start_date,self.course.duration_weeks
+            )
         self.clean()
         super().save(*args, **kwargs)
     def __str__(self):

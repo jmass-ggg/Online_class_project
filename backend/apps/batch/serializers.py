@@ -50,5 +50,5 @@ class BatchCreateSerializer(serializers.ModelSerializer):
             "allow_self_enrollment",
             "is_active",
             "start_date",
-            "end_date",
+            
         ]
