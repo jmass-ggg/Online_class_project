@@ -1,3 +1,4 @@
+// LiveClassRoom.jsx
 import { useMemo, useState } from "react";
 import {
   LiveKitRoom,
@@ -18,9 +19,14 @@ import {
 } from "../../utils/livekitHelpers";
 import "../../styles/livekit.css";
 
-function ZoomLikeClassroom({ session, connection }) {
-  const [activePanel, setActivePanel] = useState("chat");
+function Initials({ value }) {
+  return String(value || "?").charAt(0).toUpperCase();
+}
+
+function NexusVideoRoom({ session, connection }) {
+  const [activePanel, setActivePanel] = useState("messages");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMore, setShowMore] = useState(false);
 
   const participants = useParticipants();
 
@@ -50,13 +56,16 @@ function ZoomLikeClassroom({ session, connection }) {
 
   const sideTracks = cameraTracks.filter((trackRef) => trackRef !== mainTrack);
 
-  const meetingTitle = session.title || "Live Class";
-  const meetingSubtitle = `${session.course_title || "Course"} • ${
-    session.classroom_name || connection.roomName || "Classroom"
-  }`;
+  const hostName =
+    mainTrack?.participant?.name ||
+    mainTrack?.participant?.identity ||
+    connection?.participantName ||
+    "Host";
+
+  const meetingTitle = session?.title || "Project Phoenix Design Sync";
 
   const toggleFullscreen = async () => {
-    const element = document.querySelector(".zoom-classroom-shell");
+    const element = document.querySelector(".nexus-video-shell");
 
     try {
       if (!document.fullscreenElement) {
@@ -65,184 +74,237 @@ function ZoomLikeClassroom({ session, connection }) {
         await document.exitFullscreen?.();
       }
     } catch {
-      // Ignore fullscreen errors from browser restrictions.
+      return;
     }
   };
 
   return (
-    <div className={`zoom-classroom-shell ${sidebarOpen ? "" : "sidebar-closed"}`}>
-      <section className="zoom-video-area">
-        <header className="zoom-meeting-header">
-          <div>
-            <div className="zoom-eyebrow">
-              <span className="zoom-live-dot" />
-              Live classroom
-            </div>
-            <h1>{meetingTitle}</h1>
-            <p>{meetingSubtitle}</p>
-          </div>
+    <div className={`nexus-video-shell ${sidebarOpen ? "" : "sidebar-closed"}`}>
+      <header className="nexus-topbar">
+        <div className="nexus-brand">Nexus Video</div>
 
-          <div className="zoom-header-actions">
-            <div className="zoom-count-pill">
-              {participants.length} participant{participants.length === 1 ? "" : "s"}
-            </div>
+        <div className="nexus-live">
+          <span />
+          Recording
+          <strong>LIVE</strong>
+        </div>
 
-            <button
-              className="zoom-icon-btn"
-              type="button"
-              onClick={toggleFullscreen}
-              title="Fullscreen"
-            >
-              ⛶
-            </button>
+        <h1>{meetingTitle}</h1>
 
-            <button
-              className="zoom-icon-btn"
-              type="button"
-              onClick={() => setSidebarOpen((value) => !value)}
-              title="Toggle panel"
-            >
-              {sidebarOpen ? "☰" : "💬"}
-            </button>
-          </div>
-        </header>
+        <div className="nexus-top-actions">
+          <button type="button" onClick={toggleFullscreen} title="Fullscreen">
+            ⛶
+          </button>
 
-        <main className="zoom-stage-wrap">
-          <div className="zoom-main-video">
-            {mainTrack ? (
-              <ParticipantTile trackRef={mainTrack} className="zoom-main-tile" />
-            ) : (
-              <div className="zoom-video-placeholder">
-                Waiting for teacher or participants...
+          <button
+            type="button"
+            onClick={() => setSidebarOpen((value) => !value)}
+            title="Toggle side panel"
+          >
+            ☰
+          </button>
+        </div>
+      </header>
+
+      <aside className="nexus-filmstrip">
+        {sideTracks.length > 0
+          ? sideTracks.slice(0, 4).map((trackRef) => (
+              <div
+                className="nexus-thumb"
+                key={`${trackRef.participant?.identity}-${trackRef.source}`}
+              >
+                <ParticipantTile trackRef={trackRef} />
+                <div className="nexus-thumb-name">
+                  {trackRef.participant?.name ||
+                    trackRef.participant?.identity ||
+                    "Participant"}
+                </div>
               </div>
-            )}
-
-            <div className="zoom-reaction-bar" aria-hidden="true">
-              <span>👏</span>
-              <span>👍</span>
-              <span>😊</span>
-              <span>❤️</span>
-              <span>✋</span>
-            </div>
-          </div>
-
-          <aside className="zoom-thumbnail-rail">
-            {sideTracks.length ? (
-              sideTracks.slice(0, 5).map((trackRef) => (
-                <ParticipantTile
-                  key={`${trackRef.participant?.identity}-${trackRef.source}`}
-                  trackRef={trackRef}
-                  className="zoom-thumb-tile"
-                />
-              ))
-            ) : (
-              <div className="zoom-thumb-empty">
-                <span>No other cameras</span>
+            ))
+          : participants.slice(0, 4).map((participant) => (
+              <div
+                className="nexus-thumb placeholder"
+                key={participant.identity}
+              >
+                <div className="nexus-thumb-avatar">
+                  <Initials value={participant.name || participant.identity} />
+                </div>
+                <div className="nexus-thumb-name">
+                  {participant.name || participant.identity}
+                </div>
               </div>
-            )}
-          </aside>
-        </main>
+            ))}
+      </aside>
 
-        <footer className="zoom-bottom-bar">
-          <div className="zoom-left-controls">
-            <span className="zoom-room-name">
-              {connection.roomName || "Classroom room"}
-            </span>
+      <main className="nexus-stage">
+        <section className="nexus-main-card">
+          {mainTrack ? (
+            <ParticipantTile trackRef={mainTrack} className="nexus-main-tile" />
+          ) : (
+            <div className="nexus-waiting">
+              Turn on camera or share your screen
+            </div>
+          )}
+
+          <div className="nexus-nameplate">
+            <strong>{hostName}</strong>
+            <em>{screenShareTrack ? "is presenting" : "(Host)"}</em>
           </div>
 
-          <div className="zoom-center-controls">
+          <div className="nexus-control-dock">
             <TrackToggle
               source={Track.Source.Microphone}
-              className="zoom-control-btn"
+              className="zoom-control"
             >
-              🎙️ Mic
+              <span className="zoom-icon">🎙️</span>
+              <small>Mute</small>
             </TrackToggle>
 
-            <TrackToggle source={Track.Source.Camera} className="zoom-control-btn">
-              🎥 Camera
+            <TrackToggle source={Track.Source.Camera} className="zoom-control">
+              <span className="zoom-icon">🎥</span>
+              <small>Video</small>
             </TrackToggle>
 
             <TrackToggle
               source={Track.Source.ScreenShare}
-              className="zoom-control-btn"
+              className="zoom-control share"
             >
-              🖥️ Share
+              <span className="zoom-icon">⬆</span>
+              <small>Share</small>
             </TrackToggle>
 
             <button
-              className="zoom-control-btn"
               type="button"
-              onClick={() => setActivePanel("participants")}
+              className="zoom-control long"
+              onClick={() => {
+                setSidebarOpen(true);
+                setActivePanel("participants");
+              }}
             >
-              👥 People
+              <span className="zoom-icon">👥</span>
+              <small>People</small>
             </button>
 
             <button
-              className="zoom-control-btn"
               type="button"
+              className="zoom-control long"
               onClick={() => {
                 setSidebarOpen(true);
-                setActivePanel("chat");
+                setActivePanel("messages");
               }}
             >
-              💬 Chat
+              <span className="zoom-icon">💬</span>
+              <small>Chat</small>
             </button>
-          </div>
 
-          <div className="zoom-right-controls">
-            <DisconnectButton className="zoom-leave-btn">
-              Leave
+            <div className="more-wrap">
+              <button
+                type="button"
+                className="zoom-control long"
+                onClick={() => setShowMore((value) => !value)}
+              >
+                <span className="zoom-icon">⋯</span>
+                <small>More</small>
+              </button>
+
+              {showMore && (
+                <div className="more-menu">
+                  <button type="button" onClick={toggleFullscreen}>
+                    Full screen
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen((value) => !value)}
+                  >
+                    {sidebarOpen ? "Hide side panel" : "Show side panel"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSidebarOpen(true);
+                      setActivePanel("messages");
+                    }}
+                  >
+                    Open chat
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSidebarOpen(true);
+                      setActivePanel("participants");
+                    }}
+                  >
+                    Open participants
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <DisconnectButton className="zoom-leave long">
+              <span className="zoom-icon">☎</span>
+              <small>Leave</small>
             </DisconnectButton>
           </div>
-        </footer>
-      </section>
+        </section>
+      </main>
 
-      <aside className="zoom-side-panel">
-        <div className="zoom-panel-tabs">
+      <aside className="nexus-panel">
+        <div className="nexus-panel-head">
+          <h2>Project Sync</h2>
+          <p>{participants.length || 1} Participants</p>
+        </div>
+
+        <div className="nexus-tabs">
           <button
+            className={activePanel === "messages" ? "active" : ""}
+            onClick={() => setActivePanel("messages")}
             type="button"
-            className={activePanel === "chat" ? "active" : ""}
-            onClick={() => setActivePanel("chat")}
           >
-            Chat
+            Messages
           </button>
 
           <button
-            type="button"
             className={activePanel === "participants" ? "active" : ""}
             onClick={() => setActivePanel("participants")}
+            type="button"
           >
             Participants
           </button>
+
+          <button
+            className={activePanel === "polls" ? "active" : ""}
+            onClick={() => setActivePanel("polls")}
+            type="button"
+          >
+            Polls
+          </button>
         </div>
 
-        {activePanel === "chat" ? (
-          <div className="zoom-chat-panel">
+        {activePanel === "messages" && (
+          <div className="nexus-chat">
             <Chat />
           </div>
-        ) : (
-          <div className="zoom-participants-panel">
-            <div className="zoom-panel-heading">
-              <h2>Participants</h2>
-              <span>{participants.length}</span>
-            </div>
+        )}
 
-            <div className="zoom-people-list">
-              {participants.map((participant) => (
-                <div className="zoom-person-row" key={participant.identity}>
-                  <div className="zoom-avatar">
-                    {String(participant.name || participant.identity || "?")
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                  <div>
-                    <strong>{participant.name || participant.identity}</strong>
-                    <span>{participant.isLocal ? "You" : "Participant"}</span>
-                  </div>
+        {activePanel === "participants" && (
+          <div className="nexus-people-list">
+            {participants.map((participant) => (
+              <div className="nexus-person" key={participant.identity}>
+                <div>
+                  <Initials value={participant.name || participant.identity} />
                 </div>
-              ))}
-            </div>
+                <span>{participant.name || participant.identity}</span>
+                <small>{participant.isLocal ? "You" : "Participant"}</small>
+              </div>
+            ))}
           </div>
+        )}
+
+        {activePanel === "polls" && (
+          <div className="nexus-empty">No active polls</div>
         )}
       </aside>
 
@@ -270,10 +332,7 @@ export default function LiveClassRoom() {
       <main className="live-missing">
         <div className="auth-card">
           <h1>Live class connection data missing.</h1>
-          <p>
-            Please join again from your sessions page so the backend can return a
-            LiveKit server URL and token.
-          </p>
+          <p>Please join again from your sessions page.</p>
           <button
             className="btn btn-primary"
             type="button"
@@ -292,13 +351,13 @@ export default function LiveClassRoom() {
         token={participantToken}
         serverUrl={serverUrl}
         connect
-        video
-        audio
+        video={false}
+        audio={false}
         onDisconnected={navigateBack}
         data-lk-theme="default"
         className="livekit-custom-room"
       >
-        <ZoomLikeClassroom session={session} connection={connection} />
+        <NexusVideoRoom session={session} connection={connection} />
       </LiveKitRoom>
     </main>
   );
