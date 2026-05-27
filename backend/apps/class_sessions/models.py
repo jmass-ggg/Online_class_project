@@ -31,8 +31,6 @@ class ClassSession(models.Model):
         limit_choices_to={"role": "TEACHER"}
     )
 
-   
-
     scheduled_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()

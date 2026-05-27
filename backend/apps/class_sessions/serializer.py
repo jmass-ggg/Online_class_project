@@ -14,7 +14,6 @@ class ClassSessionSerializer(serializers.ModelSerializer):
             "id",
             "classroom",
             "classroom_name",
-  
             "teacher",
             "scheduled_date",
             "start_time",

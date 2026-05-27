@@ -4,7 +4,7 @@
   height: 100vh;
   min-height: 100vh;
   overflow: hidden;
-  background: #0f111a;
+  background: #080b14;
   color: #f7f7fb;
 }
 
@@ -14,56 +14,66 @@
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr) 420px;
   grid-template-rows: 78px minmax(0, 1fr);
-  background: #0f111a;
+  background:
+    radial-gradient(circle at 35% 10%, rgba(74, 103, 255, 0.12), transparent 32%),
+    #080b14;
   color: #f7f7fb;
   font-family: Inter, system-ui, sans-serif;
 }
 
+/* Topbar */
 .nexus-topbar {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 230px auto 1fr auto;
+  grid-template-columns: 230px auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 22px;
   padding: 0 24px;
-  background: #10111a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 17, 29, 0.94);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  backdrop-filter: blur(18px);
 }
 
 .nexus-brand {
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: 29px;
+  font-weight: 950;
+  letter-spacing: -0.06em;
 }
 
 .nexus-live {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #ffaaa2;
+  gap: 9px;
+  color: #ffb4ad;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .nexus-live span {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #ff9f98;
+  background: #ff6b6b;
+  box-shadow: 0 0 0 5px rgba(255, 107, 107, 0.16);
 }
 
 .nexus-live strong {
-  padding: 5px 9px;
-  border-radius: 6px;
-  background: #202231;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: #181d2e;
   color: white;
   font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .nexus-topbar h1 {
+  min-width: 0;
   margin: 0;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 850;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .nexus-top-actions {
@@ -72,34 +82,54 @@
   gap: 10px;
 }
 
-.nexus-top-actions button {
+.nexus-top-actions button,
+.panel-close {
   width: 38px;
   height: 38px;
-  border: 1px solid #303346;
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 999px;
-  background: #171a26;
+  background: #121827;
   color: #eef0f9;
   cursor: pointer;
   font-weight: 900;
   font-size: 17px;
 }
 
+.nexus-top-actions button:hover,
+.panel-close:hover {
+  background: #1f2940;
+  border-color: rgba(184, 199, 255, 0.45);
+}
+
+/* Left participant strip */
 .nexus-filmstrip {
   padding: 20px;
   display: grid;
   align-content: start;
   gap: 12px;
-  background: #0f111a;
+  background: rgba(8, 11, 20, 0.96);
   overflow-y: auto;
 }
 
 .nexus-thumb {
   position: relative;
-  height: 112px;
+  height: 118px;
   overflow: hidden;
-  border-radius: 12px;
-  background: #070910;
-  border: 1px solid #2a3144;
+  border-radius: 16px;
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+}
+
+.nexus-thumb.speaking {
+  border-color: #7c9cff;
+  box-shadow:
+    0 0 0 3px rgba(124, 156, 255, 0.22),
+    0 14px 40px rgba(0, 0, 0, 0.32);
+}
+
+.nexus-thumb.pinned {
+  border-color: #a78bfa;
 }
 
 .nexus-thumb .lk-participant-tile,
@@ -107,23 +137,44 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  background: #111827;
 }
 
-.nexus-thumb.placeholder {
+.nexus-thumb-placeholder {
+  width: 100%;
+  height: 100%;
   display: grid;
   place-items: center;
 }
 
 .nexus-thumb-avatar {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #303448;
-  color: white;
-  font-weight: 900;
+  background: linear-gradient(135deg, #8ea2ff, #c4b5fd);
+  color: #0f172a;
+  font-weight: 950;
   font-size: 24px;
+}
+
+.nexus-pin-btn {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(12, 17, 30, 0.78);
+  color: white;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.nexus-pin-btn.active {
+  background: #7c3aed;
 }
 
 .nexus-thumb-name {
@@ -131,16 +182,38 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 22px 14px 10px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.88));
-  font-size: 14px;
+  padding: 26px 12px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
+.nexus-media-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nexus-media-status span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  font-size: 12px;
+}
+
+/* Main stage */
 .nexus-stage {
   min-width: 0;
   min-height: 0;
   padding: 20px;
-  background: #0f111a;
+  background: transparent;
 }
 
 .nexus-main-card {
@@ -148,10 +221,19 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 24px;
-  background: #171921;
-  border: 2px solid #9eb5ff;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  border-radius: 26px;
+  background: #151923;
+  border: 1px solid rgba(142, 162, 255, 0.58);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.48),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.nexus-main-card.is-pinned {
+  border-color: #a78bfa;
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.48),
+    0 0 0 3px rgba(167, 139, 250, 0.18);
 }
 
 .nexus-main-tile,
@@ -165,16 +247,44 @@
 
 .nexus-main-card .lk-participant-name,
 .nexus-thumb .lk-participant-name {
-  display: none;
+  display: none !important;
 }
 
-.nexus-waiting {
+.nexus-main-placeholder {
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
-  color: #b8bfd3;
-  font-weight: 800;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 34%),
+    #151923;
+}
+
+.nexus-main-avatar {
+  width: min(32vw, 260px);
+  height: min(32vw, 260px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3f4960, #555f72);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 950;
+}
+
+.nexus-pinned-label {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.9);
+  color: white;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
 }
 
 .nexus-nameplate {
@@ -183,21 +293,51 @@
   bottom: 24px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  max-width: 360px;
-  padding: 13px 17px;
-  border-radius: 10px;
-  background: rgba(28, 31, 43, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
-  font-size: 16px;
+  gap: 11px;
+  max-width: min(460px, calc(100% - 48px));
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(18, 24, 39, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(16px);
+  font-size: 15px;
+  z-index: 6;
+}
+
+.name-avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #8ea2ff;
+  color: #0f172a;
+  font-weight: 950;
+}
+
+.nexus-nameplate strong {
+  display: block;
 }
 
 .nexus-nameplate em {
+  display: block;
+  margin-top: 2px;
   color: #c6cada;
   font-style: normal;
+  font-size: 12px;
 }
 
+.unpin-btn {
+  border: 0;
+  border-radius: 999px;
+  background: #2f3650;
+  color: white;
+  padding: 8px 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* Bottom controls */
 .nexus-control-dock {
   position: absolute;
   left: 50%;
@@ -206,37 +346,47 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  max-width: calc(100% - 42px);
   padding: 12px 16px;
-  border-radius: 22px;
-  background: rgba(31, 34, 47, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  border-radius: 24px;
+  background: rgba(24, 29, 45, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(18px);
+  z-index: 8;
 }
 
 .zoom-control,
 .zoom-leave {
-  width: 78px;
+  width: 76px;
   height: 66px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 17px;
   background: transparent !important;
   color: #f4f6ff !important;
-  display: grid;
-  place-items: center;
+  display: grid !important;
+  place-items: center !important;
   gap: 4px;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 850;
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
 }
 
 .zoom-control.long,
 .zoom-leave.long {
-  width: 92px;
+  width: 88px;
 }
 
 .zoom-control:hover,
 .zoom-leave:hover {
-  background: #2b2f42 !important;
+  background: #2b3147 !important;
+  transform: translateY(-1px);
+}
+
+.zoom-control.is-on {
+  background: rgba(142, 162, 255, 0.12) !important;
 }
 
 .zoom-icon {
@@ -245,15 +395,14 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #b8c7ff;
+  background: #8ea2ff;
   color: #10121a;
   font-size: 18px;
 }
 
-.zoom-control small,
-.zoom-leave small {
-  font-size: 12px;
-  color: #d8dcee;
+.zoom-control.is-off .zoom-icon {
+  background: #3b435b;
+  color: #e5e7eb;
 }
 
 .zoom-control.share .zoom-icon {
@@ -261,9 +410,15 @@
   color: #07120c;
 }
 
+.zoom-control small,
+.zoom-leave small {
+  font-size: 11px;
+  color: #d8dcee;
+}
+
 .zoom-leave .zoom-icon {
-  background: #ff8f8b;
-  color: #10121a;
+  background: #ff7b7b;
+  color: #1a0d0d;
   font-size: 20px;
 }
 
@@ -276,11 +431,11 @@
   left: 50%;
   bottom: 82px;
   transform: translateX(-50%);
-  width: 210px;
+  width: 220px;
   padding: 8px;
-  border-radius: 14px;
-  background: #242838;
-  border: 1px solid #3a3f55;
+  border-radius: 16px;
+  background: #242a3d;
+  border: 1px solid #3a435d;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
 }
 
@@ -288,32 +443,37 @@
   width: 100%;
   padding: 12px 13px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
   color: white;
   text-align: left;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .more-menu button:hover {
-  background: #32374b;
+  background: #323a55;
 }
 
+/* Right panel */
 .nexus-panel {
   min-width: 0;
   min-height: 0;
   height: calc(100vh - 78px);
   display: grid;
   grid-template-rows: 94px 42px minmax(0, 1fr);
-  background: #1b1d27;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: #151923;
+  border-left: 1px solid rgba(148, 163, 184, 0.15);
   overflow: hidden;
 }
 
 .nexus-panel-head {
-  padding: 24px 26px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.13);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .nexus-panel-head h2 {
@@ -326,14 +486,18 @@
   color: #c8ccdb;
 }
 
+.panel-close {
+  display: none;
+}
+
 .nexus-tabs {
   height: 42px;
   display: flex;
   align-items: flex-end;
   gap: 18px;
   padding: 0 18px;
-  background: #1b1d27;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #151923;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.13);
 }
 
 .nexus-tabs button {
@@ -344,25 +508,58 @@
   color: #d9ddeb;
   font-size: 14px;
   cursor: pointer;
+  font-weight: 800;
 }
 
 .nexus-tabs button.active {
-  border-bottom-color: #b8c7ff;
+  border-bottom-color: #8ea2ff;
   color: white;
 }
 
+/* Chat */
+/* Final compact chat polish */
+.nexus-panel {
+  background: #111622;
+}
+
+.nexus-panel-head {
+  padding: 18px 22px 14px !important;
+}
+
+.nexus-panel-head h2 {
+  font-size: 19px !important;
+  margin-bottom: 5px !important;
+}
+
+.nexus-panel-head p {
+  font-size: 13px !important;
+}
+
+.nexus-tabs {
+  height: 38px !important;
+  gap: 16px !important;
+  padding: 0 18px !important;
+}
+
+.nexus-tabs button {
+  height: 34px !important;
+  font-size: 13px !important;
+}
+
+/* Chat layout */
 .nexus-chat {
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  background: #111622 !important;
 }
 
 .nexus-chat .lk-chat {
   height: 100% !important;
   min-height: 0 !important;
   display: grid !important;
-  grid-template-rows: 1fr auto !important;
-  background: #1b1d27 !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+  background: #111622 !important;
   border: 0 !important;
 }
 
@@ -373,53 +570,166 @@
 .nexus-chat .lk-chat-messages {
   min-height: 0 !important;
   overflow-y: auto !important;
-  padding: 16px !important;
-  background: #1b1d27 !important;
-}
-
-.nexus-chat .lk-chat-entry {
-  position: sticky !important;
-  bottom: 0 !important;
+  padding: 12px 12px 10px !important;
   display: flex !important;
-  align-items: center !important;
-  min-height: 74px !important;
-  padding: 12px 16px !important;
-  background: #1b1d27 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  background: #111622 !important;
 }
 
-.nexus-chat .lk-chat-entry form {
+/* Message wrapper */
+.nexus-chat .lk-chat-message,
+.nexus-chat [data-lk-message] {
+  width: fit-content !important;
+  max-width: 78% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  align-self: flex-start !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Sender name + time smaller */
+.nexus-chat .lk-chat-message-meta,
+.nexus-chat .lk-chat-message-author,
+.nexus-chat .lk-chat-message-timestamp {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin: 0 0 4px 4px !important;
+  color: #9ca7bd !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  font-weight: 750 !important;
+}
+
+/* Message text bubble */
+.nexus-chat .lk-chat-message-body,
+.nexus-chat .lk-chat-message-text,
+.nexus-chat [data-lk-message-body] {
+  display: block !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  padding: 8px 11px !important;
+  border-radius: 14px 14px 14px 5px !important;
+  background: #2a3142 !important;
+  color: #f8fafc !important;
+  font-size: 12.5px !important;
+  line-height: 1.4 !important;
+  word-break: break-word !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Own messages */
+.nexus-chat .lk-chat-message[data-lk-local-participant="true"],
+.nexus-chat [data-lk-message-origin="local"],
+.nexus-chat .lk-chat-message.local {
+  align-self: flex-end !important;
+}
+
+.nexus-chat .lk-chat-message[data-lk-local-participant="true"] .lk-chat-message-body,
+.nexus-chat .lk-chat-message[data-lk-local-participant="true"] .lk-chat-message-text,
+.nexus-chat [data-lk-message-origin="local"] [data-lk-message-body],
+.nexus-chat .lk-chat-message.local .lk-chat-message-body,
+.nexus-chat .lk-chat-message.local .lk-chat-message-text {
+  border-radius: 14px 14px 5px 14px !important;
+  background: linear-gradient(135deg, #5b7cff, #7c3aed) !important;
+}
+
+/* Remove big divider lines */
+.nexus-chat hr,
+.nexus-chat .lk-chat-message-separator {
+  display: none !important;
+}
+
+/* Input area smaller */
+.nexus-chat .lk-chat-entry {
+  width: 100% !important;
+  min-height: 66px !important;
+  padding: 10px 12px !important;
+  background: rgba(17, 22, 34, 0.98) !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+  box-sizing: border-box !important;
+}
+
+.nexus-chat .lk-chat-entry form,
+.nexus-chat .lk-chat-form,
+.nexus-chat form {
   width: 100% !important;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
+  box-sizing: border-box !important;
 }
 
+/* Important: input must flex, not width 100% */
 .nexus-chat input,
 .nexus-chat textarea,
 .nexus-chat .lk-form-control {
-  width: 100% !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
   height: 42px !important;
   min-height: 42px !important;
   max-height: 42px !important;
   resize: none !important;
   border-radius: 999px !important;
-  background: #141620 !important;
-  border: 1px solid #3a3e50 !important;
-  color: white !important;
-  padding: 0 16px !important;
+  background: #0b1020 !important;
+  border: 1px solid rgba(142, 162, 255, 0.22) !important;
+  color: #ffffff !important;
+  padding: 0 15px !important;
+  font-size: 12.5px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
 }
 
+.nexus-chat input::placeholder,
+.nexus-chat textarea::placeholder {
+  color: #7d879b !important;
+}
+
+.nexus-chat input:focus,
+.nexus-chat textarea:focus,
+.nexus-chat .lk-form-control:focus {
+  border-color: #8ea2ff !important;
+  box-shadow: 0 0 0 3px rgba(142, 162, 255, 0.12) !important;
+}
+
+/* Send button */
 .nexus-chat button,
 .nexus-chat .lk-button {
-  flex: 0 0 auto !important;
-  width: 42px !important;
-  height: 42px !important;
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
   border-radius: 999px !important;
-  background: transparent !important;
-  color: #b8c7ff !important;
+  background: #8ea2ff !important;
+  color: #080b14 !important;
+  border: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  box-shadow: 0 8px 20px rgba(142, 162, 255, 0.2) !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  font-size: 0 !important;
 }
 
+.nexus-chat button::before,
+.nexus-chat .lk-button::before {
+  content: "➤";
+  font-size: 15px;
+  line-height: 1;
+  transform: translateX(1px);
+}
+
+.nexus-chat button:hover,
+.nexus-chat .lk-button:hover {
+  background: #a5b4ff !important;
+  transform: translateY(-1px);
+}
+
+/* People */
 .nexus-people-list {
   padding: 16px;
   overflow-y: auto;
@@ -428,37 +738,128 @@
   gap: 10px;
 }
 
+.nexus-panel-count {
+  color: #aeb7cc;
+  font-size: 13px;
+  font-weight: 850;
+  margin-bottom: 4px;
+}
+
 .nexus-person {
   display: grid;
-  grid-template-columns: 46px 1fr auto;
+  grid-template-columns: 46px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border-radius: 16px;
-  background: #272a38;
+  border-radius: 18px;
+  background: #1c2232;
+  border: 1px solid rgba(148, 163, 184, 0.11);
 }
 
-.nexus-person div {
+.nexus-person.host {
+  border-color: rgba(142, 162, 255, 0.45);
+  background: rgba(142, 162, 255, 0.1);
+}
+
+.nexus-person-avatar {
+  position: relative;
   width: 46px;
   height: 46px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #b8c7ff;
+  background: #8ea2ff;
   color: #11121a;
-  font-weight: 900;
+  font-weight: 950;
 }
 
-.nexus-person small {
+.online-dot {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: #39d98a;
+  border: 2px solid #1c2232;
+}
+
+.nexus-person-info {
+  min-width: 0;
+}
+
+.nexus-person-info strong {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nexus-person-info small {
+  display: inline-flex;
+  margin-top: 4px;
   color: #aeb5c8;
+  font-weight: 800;
 }
 
+.person-pin {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: #101827;
+  color: white;
+  cursor: pointer;
+}
+
+.person-pin.active {
+  background: #7c3aed;
+}
+
+/* Polls */
 .nexus-empty {
   display: grid;
   place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 26px;
   color: #aeb5c8;
+  text-align: center;
 }
 
+.nexus-empty-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: #20283b;
+  font-size: 24px;
+}
+
+.nexus-empty h3 {
+  margin: 0;
+  color: white;
+}
+
+.nexus-empty p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.nexus-poll-btn {
+  margin-top: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: #8ea2ff;
+  color: #0f172a;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+/* Closed panel */
 .sidebar-closed {
   grid-template-columns: 230px minmax(0, 1fr) 0;
 }
@@ -467,21 +868,31 @@
   display: none;
 }
 
-@media (max-width: 1100px) {
+/* Missing connection */
+.live-missing {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #080b14;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
   .nexus-video-shell {
-    grid-template-columns: 180px minmax(0, 1fr) 360px;
+    grid-template-columns: 190px minmax(0, 1fr) 360px;
   }
 
   .nexus-topbar {
-    grid-template-columns: 180px auto 1fr auto;
+    grid-template-columns: 190px auto minmax(0, 1fr) auto;
   }
 
   .nexus-brand {
-    font-size: 25px;
+    font-size: 24px;
   }
 
   .nexus-thumb {
-    height: 96px;
+    height: 104px;
   }
 
   .zoom-control,
@@ -502,7 +913,7 @@
   }
 
   .nexus-topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 0 14px;
   }
 
@@ -512,8 +923,7 @@
 
   .nexus-live,
   .nexus-topbar h1,
-  .nexus-filmstrip,
-  .nexus-panel {
+  .nexus-filmstrip {
     display: none;
   }
 
@@ -521,16 +931,452 @@
     padding: 12px;
   }
 
+  .nexus-main-card {
+    border-radius: 20px;
+  }
+
+  .nexus-panel {
+    position: fixed;
+    right: 0;
+    top: 72px;
+    bottom: 0;
+    width: min(100%, 360px);
+    height: calc(100vh - 72px);
+    z-index: 40;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .nexus-panel.open {
+    transform: translateX(0);
+  }
+
+  .panel-close {
+    display: grid;
+    place-items: center;
+  }
+
+  .sidebar-closed {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-closed .nexus-panel {
+    display: grid;
+    transform: translateX(100%);
+  }
+
   .nexus-control-dock {
     width: calc(100% - 24px);
     overflow-x: auto;
     justify-content: flex-start;
+    bottom: 12px;
   }
 
   .zoom-control,
   .zoom-leave,
   .zoom-control.long,
   .zoom-leave.long {
-    min-width: 78px;
+    min-width: 76px;
+  }
+
+  .nexus-nameplate {
+    left: 14px;
+    bottom: 96px;
+    max-width: calc(100% - 28px);
+  }
+}
+.nexus-svg {
+  width: 19px;
+  height: 19px;
+}
+
+.nexus-top-actions button {
+  display: grid;
+  place-items: center;
+}
+
+.nexus-main-card {
+  border-radius: 28px;
+  border-color: rgba(126, 150, 255, 0.72);
+}
+
+.nexus-main-card video {
+  object-fit: cover !important;
+}
+
+.nexus-filmstrip {
+  gap: 14px;
+}
+
+.nexus-thumb {
+  height: 124px;
+  border-radius: 18px;
+}
+
+.nexus-thumb.speaking {
+  border-color: #7c9cff;
+  box-shadow:
+    0 0 0 3px rgba(124, 156, 255, 0.2),
+    0 18px 48px rgba(0, 0, 0, 0.36);
+}
+
+.nexus-pin-btn {
+  display: grid;
+  place-items: center;
+}
+
+.nexus-pin-btn .nexus-svg,
+.person-pin .nexus-svg {
+  width: 15px;
+  height: 15px;
+}
+
+.nexus-media-status span {
+  display: grid;
+  place-items: center;
+}
+
+.nexus-media-status .nexus-svg {
+  width: 13px;
+  height: 13px;
+}
+
+.nexus-media-status span.on {
+  background: rgba(57, 217, 138, 0.18);
+  color: #7ff0b4;
+}
+
+.nexus-media-status span.off {
+  background: rgba(255, 123, 123, 0.16);
+  color: #ff9a9a;
+}
+
+.nexus-pinned-label {
+  background: rgba(124, 58, 237, 0.92);
+}
+
+.nexus-control-dock {
+  bottom: 20px;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 26px;
+}
+
+.zoom-icon {
+  display: grid;
+  place-items: center;
+}
+
+.zoom-icon .nexus-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.zoom-leave .zoom-icon {
+  background: #ff6b6b;
+  color: #220909;
+  transform: rotate(135deg);
+}
+
+.zoom-leave small {
+  color: #ffd7d7;
+}
+
+.zoom-control.is-off .zoom-icon {
+  background: #30384f;
+  color: #cbd5e1;
+}
+
+.zoom-control.is-on .zoom-icon {
+  background: #8ea2ff;
+  color: #080b14;
+}
+
+.zoom-control.share .zoom-icon {
+  background: #39d98a;
+  color: #07120c;
+}
+
+.zoom-control:hover,
+.zoom-leave:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.nexus-person {
+  grid-template-columns: 46px minmax(0, 1fr) auto auto;
+}
+
+.nexus-person.host {
+  border-color: rgba(142, 162, 255, 0.5);
+  background: rgba(142, 162, 255, 0.12);
+}
+
+.person-pin {
+  display: grid;
+  place-items: center;
+}
+
+.person-pin.active,
+.nexus-pin-btn.active {
+  background: #7c3aed;
+  color: white;
+}
+
+@media (min-width: 901px) {
+  .nexus-video-shell.sidebar-closed {
+    grid-template-columns: 230px minmax(0, 1fr) 0;
+  }
+
+  .nexus-video-shell.sidebar-closed .nexus-stage {
+    padding-right: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .nexus-thumb {
+    height: 110px;
+  }
+
+  .nexus-control-dock {
+    bottom: 12px;
+  }
+}
+/* Fix double icons and align bottom control buttons */
+.zoom-control,
+.zoom-leave {
+  display: grid !important;
+  grid-template-rows: 42px 16px !important;
+  align-content: center !important;
+  justify-items: center !important;
+  gap: 6px !important;
+  padding: 6px 8px !important;
+}
+
+/* Hide any default LiveKit icon if showIcon does not remove it */
+.zoom-control > svg:not(.nexus-svg),
+.zoom-control > .lk-button-icon,
+.zoom-control > .lk-icon {
+  display: none !important;
+}
+
+.zoom-icon {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  line-height: 0 !important;
+}
+
+.zoom-icon .nexus-svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+}
+
+.zoom-control small,
+.zoom-leave small {
+  display: block !important;
+  height: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 16px !important;
+  text-align: center !important;
+  font-size: 11px !important;
+}
+
+.nexus-control-dock {
+  align-items: center !important;
+}
+
+.zoom-leave .zoom-icon {
+  transform: none !important;
+}
+/* Hide default LiveKit labels/status badges on main video only */
+.nexus-main-card .lk-participant-name,
+.nexus-main-card .lk-participant-metadata,
+.nexus-main-card .lk-participant-metadata-item,
+.nexus-main-card .lk-participant-metadata-muted,
+.nexus-main-card .lk-participant-metadata-camera {
+  display: none !important;
+}
+
+/* Do NOT hide TrackToggle buttons */
+.nexus-control-dock [data-lk-source="microphone"],
+.nexus-control-dock [data-lk-source="camera"],
+.nexus-control-dock [data-lk-source="screen_share"] {
+  display: grid !important;
+}
+
+/* Better chat/message panel style */
+.nexus-chat .lk-chat-messages {
+  padding: 18px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142, 162, 255, 0.08), transparent 32%),
+    #151923 !important;
+}
+
+.nexus-chat .lk-chat-message,
+.nexus-chat [data-lk-message] {
+  width: fit-content !important;
+  max-width: 82% !important;
+  padding: 10px 12px !important;
+  border-radius: 16px 16px 16px 6px !important;
+  background: #222838 !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+.nexus-chat .lk-chat-message[data-lk-local-participant="true"],
+.nexus-chat [data-lk-message-origin="local"],
+.nexus-chat .lk-chat-message.local {
+  align-self: flex-end !important;
+  border-radius: 16px 16px 6px 16px !important;
+  background: linear-gradient(135deg, #5b7cff, #7c3aed) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.nexus-chat .lk-chat-message-meta,
+.nexus-chat .lk-chat-message-author,
+.nexus-chat .lk-chat-message-timestamp {
+  color: #aeb7cc !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  margin-bottom: 5px !important;
+}
+
+.nexus-chat .lk-chat-message-body,
+.nexus-chat .lk-chat-message-text,
+.nexus-chat [data-lk-message-body] {
+  color: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  word-break: break-word !important;
+}
+
+.nexus-chat .lk-chat-entry {
+  min-height: 78px !important;
+  padding: 14px 16px !important;
+  background: rgba(21, 25, 35, 0.96) !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+  backdrop-filter: blur(14px);
+}
+
+.nexus-chat .lk-chat-entry form {
+  gap: 10px !important;
+}
+
+.nexus-chat input,
+.nexus-chat textarea,
+.nexus-chat .lk-form-control {
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  border-radius: 999px !important;
+  background: #0d1322 !important;
+  border: 1px solid rgba(142, 162, 255, 0.24) !important;
+  color: #ffffff !important;
+  padding: 0 17px !important;
+  font-size: 13px !important;
+}
+
+.nexus-chat input:focus,
+.nexus-chat textarea:focus,
+.nexus-chat .lk-form-control:focus {
+  border-color: #8ea2ff !important;
+  box-shadow: 0 0 0 4px rgba(142, 162, 255, 0.12) !important;
+  outline: none !important;
+}
+
+.nexus-chat button,
+.nexus-chat .lk-button {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  background: #8ea2ff !important;
+  color: #080b14 !important;
+  border: 0 !important;
+  box-shadow: 0 10px 24px rgba(142, 162, 255, 0.22) !important;
+}
+
+.nexus-chat button:hover,
+.nexus-chat .lk-button:hover {
+  background: #a5b4ff !important;
+  transform: translateY(-1px);
+}
+
+/* Remove big empty divider lines in chat messages if LiveKit adds them */
+.nexus-chat hr,
+.nexus-chat .lk-chat-message-separator {
+  display: none !important;
+}
+/* Restore and align compact bottom controls */
+.nexus-control-dock.compact-controls {
+  min-width: 420px;
+  width: auto;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 12px 20px !important;
+}
+
+.nexus-control-dock.compact-controls .zoom-control,
+.nexus-control-dock.compact-controls .zoom-leave {
+  display: grid !important;
+  grid-template-rows: 42px 16px !important;
+  align-content: center !important;
+  justify-items: center !important;
+  width: 76px !important;
+  height: 66px !important;
+  min-width: 76px !important;
+  gap: 6px !important;
+  padding: 6px 8px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.nexus-control-dock.compact-controls .zoom-icon {
+  width: 42px !important;
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.nexus-control-dock.compact-controls small {
+  display: block !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  text-align: center !important;
+}
+
+/* Hide duplicate default LiveKit SVG icons inside buttons */
+.zoom-control > svg:not(.nexus-svg),
+.zoom-control > .lk-button-icon,
+.zoom-control > .lk-icon {
+  display: none !important;
+}
+
+/* Remove small LiveKit mute icon at video bottom-left */
+.nexus-main-card .lk-participant-metadata {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .nexus-control-dock.compact-controls {
+    min-width: auto;
+    width: calc(100% - 24px);
+    gap: 10px !important;
+  }
+
+  .nexus-control-dock.compact-controls .zoom-control,
+  .nexus-control-dock.compact-controls .zoom-leave {
+    width: 68px !important;
+    min-width: 68px !important;
   }
 }

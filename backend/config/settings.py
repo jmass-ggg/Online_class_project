@@ -13,6 +13,10 @@ AUTH_USER_MODEL = "users.User"
 
 ALLOWED_HOSTS = [
     "*",
+    "jamesgurung.tech",
+    "www.jamesgurung.tech",
+    "localhost",
+    "127.0.0.1",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -36,6 +40,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5174",
     "https://*.ngrok-free.dev",
     "https://*.ngrok-free.app",
+    "http://jamesgurung.tech",
+    "http://www.jamesgurung.tech",
 ]
 INSTALLED_APPS = [
     'django.contrib.admin',
