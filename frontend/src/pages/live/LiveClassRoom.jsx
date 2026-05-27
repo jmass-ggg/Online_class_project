@@ -8,7 +8,8 @@ import {
   DisconnectButton,
   useParticipants,
   useTracks,
-} from "@livekit/components-react";
+} 
+from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
 import { useNavigate, useParams } from "react-router-dom";
@@ -96,7 +97,6 @@ function MediaStatus({ participant }) {
     </div>
   );
 }
-
 function ParticipantMiniTile({ participant, trackRef, isPinned, onPin }) {
   const name = getName(participant);
 
@@ -132,57 +132,56 @@ function ParticipantMiniTile({ participant, trackRef, isPinned, onPin }) {
     </div>
   );
 }
-
 function ParticipantsPanel({
   participants,
   pinnedIdentity,
   onPin,
   currentUserRole,
 }) {
-  return (
-    <div className="nexus-people-list">
-      <div className="nexus-panel-count">
-        {participants.length || 1} participant{participants.length === 1 ? "" : "s"}
-      </div>
+    return (
+      <div className="nexus-people-list">
+        <div className="nexus-panel-count">
+          {participants.length || 1} participant{participants.length === 1 ? "" : "s"}
+        </div>
 
-      {participants.map((participant) => {
-        const name = getName(participant);
-        const role = getParticipantRole(participant, currentUserRole);
-        const isTeacher = role === "TEACHER";
-        const isPinned = pinnedIdentity === participant.identity;
+        {participants.map((participant) => {
+          const name = getName(participant);
+          const role = getParticipantRole(participant, currentUserRole);
+          const isTeacher = role === "TEACHER";
+          const isPinned = pinnedIdentity === participant.identity;
 
-        return (
-          <div
-            className={`nexus-person ${isTeacher ? "host" : ""}`}
-            key={participant.identity}
-          >
-            <div className="nexus-person-avatar">
-              <Initials value={name} />
-              <span className="online-dot" />
-            </div>
-
-            <div className="nexus-person-info">
-              <strong>{name}</strong>
-              <small>
-                {isTeacher ? "Teacher / Host" : participant.isLocal ? "You" : "Student"}
-              </small>
-            </div>
-
-            <MediaStatus participant={participant} />
-
-            <button
-              className={`person-pin ${isPinned ? "active" : ""}`}
-              type="button"
-              onClick={() => onPin(participant.identity)}
-              title={isPinned ? "Unpin video" : "Pin video"}
+          return (
+            <div
+              className={`nexus-person ${isTeacher ? "host" : ""}`}
+              key={participant.identity}
             >
-              <Icon name="pin" />
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  );
+              <div className="nexus-person-avatar">
+                <Initials value={name} />
+                <span className="online-dot" />
+              </div>
+
+              <div className="nexus-person-info">
+                <strong>{name}</strong>
+                <small>
+                  {isTeacher ? "Teacher / Host" : participant.isLocal ? "You" : "Student"}
+                </small>
+              </div>
+
+              <MediaStatus participant={participant} />
+
+              <button
+                className={`person-pin ${isPinned ? "active" : ""}`}
+                type="button"
+                onClick={() => onPin(participant.identity)}
+                title={isPinned ? "Unpin video" : "Pin video"}
+              >
+                <Icon name="pin" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    );
 }
 
 function PollsPanel() {

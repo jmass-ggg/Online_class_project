@@ -14,7 +14,6 @@ COPY requirements.txt .
 
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
-
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1

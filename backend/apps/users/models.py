@@ -1,5 +1,4 @@
 import uuid
-
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -10,7 +9,6 @@ class UserManager(BaseUserManager):
             raise ValueError("Email is required")
 
         email = self.normalize_email(email)
-
         user = self.model(
             email=email,
             **extra_fields
