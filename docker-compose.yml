@@ -4,48 +4,47 @@ services:
     container_name: online_class_db
     restart: always
     environment:
-      POSTGRES_DB: Class
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "Kanye@12"
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
+    expose:
+      - "5432"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: project-backend
     container_name: online_class_backend
     restart: always
     command: >
       sh -c "
         python manage.py migrate &&
         python manage.py collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000 --reload
+        gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
       "
     volumes:
-      - ./backend:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    ports:
-      - "8001:8000"
+    expose:
+      - "8000"
     environment:
       DJANGO_SETTINGS_MODULE: config.settings
-      DB_NAME: Class
-      DB_USER: postgres
-      DB_PASSWORD: "Kanye@12"
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: db
       DB_PORT: "5432"
     depends_on:
       - db
 
-  
-
   nginx:
     build:
       context: .
       dockerfile: nginx/Dockerfile
+    image: project-nginx
     container_name: online_class_nginx
     restart: always
     ports:
