@@ -7,12 +7,12 @@ from dotenv import load_dotenv
 
 SECRET_KEY = 'django-insecure-a_sr1kham4adbz+v)$#g1msi%x&e=v=8d+w!)kn_@xt1n(bz$t'
 
-DEBUG = True
+DEBUG = False
 
 AUTH_USER_MODEL = "users.User"
 
 ALLOWED_HOSTS = [
-    "*",
+  
     "jamesgurung.tech",
     "www.jamesgurung.tech",
     "localhost",
@@ -34,12 +34,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "https://*.ngrok-free.dev",
-    "https://*.ngrok-free.app",
+    
     "http://jamesgurung.tech",
     "http://www.jamesgurung.tech",
 ]

@@ -4,7 +4,6 @@ from apps.batch.models import Batch
 from .validator import validate_file_extension
 
 class StudyMaterial(models.Model):
-
     id = models.UUIDField(
         primary_key=True,
         editable=False,
@@ -24,10 +23,6 @@ class StudyMaterial(models.Model):
         related_name="study_material"
     )
 
-    title = models.CharField(max_length=100)
-
-    description = models.CharField(max_length=250)
-
     upload_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -35,7 +30,6 @@ class StudyMaterial(models.Model):
 
 
 class StudyMaterialAttachment(models.Model):
-
     id = models.UUIDField(
         primary_key=True,
         editable=False,

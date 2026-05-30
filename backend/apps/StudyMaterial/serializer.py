@@ -28,8 +28,6 @@ class StudyMaterialserializer(serializers.ModelSerializer):
             "id",
             "classroom",
             "upload_by",
-            "title",
-            "description",
             "upload_at",
             "images",
             "uploaded_images",
@@ -66,16 +64,11 @@ class SubmissionSerializers(serializers.ModelSerializer):
         source="student.full_name",
         read_only=True
     )
-    assignment_title=serializers.CharField(
-          source="assignment.title",
-        read_only=True
-    )
     class Meta:
         model = Submission
         fields = [
             "id",
             "assignment",
-            "assignment_title",
             "student",
             "student_name",
             "submitted_file",
