@@ -5,10 +5,23 @@ from .models import StudyMaterial, StudyMaterialAttachment,Submission
 
 
 class StudyMaterialImageserializer(serializers.ModelSerializer):
+    file_url=serializers.SerializerMethodField()
     class Meta:
         model = StudyMaterialAttachment
-        fields = ["id", "file"]
-
+        fields = [
+            "id", "file","compression_status",
+            "original_size",
+            "compressed_size",
+            "mime_type",
+            ]
+    def get_url(self,obj):
+        request=self.obj.request
+        if not obj.file :
+            return None
+        url=obj.file.url
+        return request.build_absolute_uri(url) if request else url
+        
+        
 
 class StudyMaterialserializer(serializers.ModelSerializer):
     images = StudyMaterialImageserializer(
@@ -64,14 +77,21 @@ class SubmissionSerializers(serializers.ModelSerializer):
         source="student.full_name",
         read_only=True
     )
+    submitted_file_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Submission
         fields = [
-            "id",
+         "id",
             "assignment",
             "student",
             "student_name",
             "submitted_file",
+            "submitted_file_url",
+            "compression_status",
+            "original_size",
+            "compressed_size",
+            "mime_type",
             "submitted_at",
         ]
 
@@ -79,4 +99,17 @@ class SubmissionSerializers(serializers.ModelSerializer):
             "id",
             "student",
             "submitted_at",
+            "submitted_file_url",
+            "compression_status",
+            "original_size",
+            "compressed_size",
+            "mime_type",
         ]
+    def get_submitted_file_url(self, obj):
+        request = self.context.get("request")
+
+        if not obj.submitted_file:
+            return None
+
+        url = obj.submitted_file.url
+        return request.build_absolute_uri(url) if request else url

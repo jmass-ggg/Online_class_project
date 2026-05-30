@@ -18,7 +18,7 @@ from drf_spectacular.utils import (
 from .serializer import StudyMaterialImageserializer,StudyMaterialserializer,SubmissionSerializers
 from .models import StudyMaterial,StudyMaterialAttachment,Submission
 from apps.users.permissions import IsTeacherCourseOwner,IsStudent
-
+from .tasks import compress_uploaded_file
 @extend_schema_view(
     list=extend_schema(
         tags=["Study Material"],
@@ -67,7 +67,7 @@ class StudyMaterialViewSet(viewsets.ModelViewSet):
         queryset = (
             StudyMaterial.objects
             .select_related("classroom", "upload_by")
-            .prefetch_related("file")
+            .prefetch_related("images")
             .order_by("-upload_at")
         )
         classroom_id=self.request.query_params.get(
@@ -90,10 +90,18 @@ class StudyMaterialViewSet(viewsets.ModelViewSet):
         
         
     def perform_create(self, serializer):
-        serializer.save(
+        study_material = serializer.save(
             upload_by=self.request.user
-        )        
-        
+        )
+     
+        for attachment in study_material.images.all():
+            transaction.on_commit(
+                lambda model=attachment._meta.label, pk=str(attachment.pk): compress_uploaded_file.delay(
+                    model,
+                    pk,
+                    "file"
+                )
+            )
 class StudentSubmissionView(viewsets.ModelViewSet):
     queryset=Submission.objects.all()
     serializer_class=SubmissionSerializers
@@ -117,6 +125,15 @@ class StudentSubmissionView(viewsets.ModelViewSet):
             return Submission.objects.none()
         return queryset.distinct()
     def perform_create(self, serializer):
-        serializer.save(
+        submission = serializer.save(
             student=self.request.user
         )
+
+        if submission.submitted_file:
+            transaction.on_commit(
+                lambda model=submission._meta.label, pk=str(submission.pk): compress_uploaded_file.delay(
+                    model,
+                    pk,
+                    "submitted_file"
+                )
+            )
