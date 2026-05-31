@@ -45,3 +45,10 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+    class Meta:
+        indexes = [
+            models.Index(fields=["category"]),
+            models.Index(fields=["level"]),
+            models.Index(fields=["is_active"]),
+            models.Index(fields=["category", "level"]),
+        ]

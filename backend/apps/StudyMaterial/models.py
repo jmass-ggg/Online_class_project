@@ -34,7 +34,12 @@ class StudyMaterial(models.Model):
     )
 
     upload_at = models.DateTimeField(auto_now_add=True)
-
+    class Meta:
+        indexes = [
+            models.Index(fields=["classroom"]),
+            models.Index(fields=["upload_by"]),
+            models.Index(fields=["upload_at"]),
+        ]
     def __str__(self):
         return f"Study Material {self.id}"
 
@@ -69,7 +74,11 @@ class StudyMaterialAttachment(models.Model):
     compression_error = models.TextField(blank=True)
 
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
+    class Meta:
+        indexes = [
+            models.Index(fields=["compression_status"]),
+            models.Index(fields=["uploaded_at"]),
+        ]
     def __str__(self):
         return f"Attachment {self.id}"
 
@@ -113,6 +122,18 @@ class Submission(models.Model):
     compression_error = models.TextField(blank=True)
 
     submitted_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        indexes = [
+            models.Index(fields=["compression_status"]),
+            models.Index(fields=["submitted_at"]),
+            models.Index(fields=["assignment", "student"]),
+        ]
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=["assignment", "student"],
+                name="unique_assignment_student"
+            )
+        ]
     def __str__(self):
         return f"Submission {self.id}"

@@ -81,7 +81,11 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name} - {self.role}"
-
+    class Meta:
+        indexes = [
+            models.Index(fields=["role"]),
+            models.Index(fields=["created_at"]),
+        ]
 
 class StudentProfile(models.Model):
     id = models.UUIDField(
@@ -131,6 +135,9 @@ class TeacherProfile(models.Model):
     bio = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-
+    class Meta:
+        indexes = [
+            models.Index(fields=["experience"]),
+        ]
     def __str__(self):
         return f"Teacher Profile - {self.user.full_name}"

@@ -64,3 +64,11 @@ class Batch(models.Model):
         super().save(*args, **kwargs)
     def __str__(self):
         return f"{self.name} - {self.course.title}"
+    class Meta:
+        indexes = [
+            models.Index(fields=["teacher"]),
+            models.Index(fields=["course"]),
+            models.Index(fields=["is_active"]),
+            models.Index(fields=["start_date"]),
+            models.Index(fields=["teacher", "is_active"]),
+        ]

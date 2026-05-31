@@ -37,6 +37,15 @@ class Enrollment(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["batch", "student"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["batch", "status"]),
+        ]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["batch", "student"],
+                name="unique_batch_student"
+            )
         ]
 
     def __str__(self):
