@@ -13,7 +13,7 @@ import "./styles/cards.css";
 import "./styles/tables.css";
 import "./styles/livekit.css";
 import "./styles/responsive.css";
-
+import "./styles/teacher-lms.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

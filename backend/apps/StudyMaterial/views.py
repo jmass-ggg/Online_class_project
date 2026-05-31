@@ -116,7 +116,7 @@ class StudentSubmissionView(viewsets.ModelViewSet):
 
         queryset = (
             Submission.objects
-            .select_related("assignment", "student")
+            .select_related("assignment", "assignment__classroom", "student")
             .order_by("-submitted_at")
         )
 
@@ -126,14 +126,21 @@ class StudentSubmissionView(viewsets.ModelViewSet):
             queryset = queryset.filter(student=user)
 
         elif role == "TEACHER":
-            queryset = queryset.filter(
-                assignment__upload_by=user
-            )
+            queryset = queryset.filter(assignment__upload_by=user)
 
         else:
             return Submission.objects.none()
 
+        classroom_id = (
+            self.request.query_params.get("classroom_id")
+            or self.request.query_params.get("batch_id")
+        )
+
+        if classroom_id:
+            queryset = queryset.filter(assignment__classroom_id=classroom_id)
+
         return queryset.distinct()
+
 
     def perform_create(self, serializer):
         submission = serializer.save(

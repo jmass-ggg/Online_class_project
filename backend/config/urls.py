@@ -23,6 +23,9 @@ from apps.batch.views import BatchViewSet
 from apps.class_sessions.views import ClassSessionViewSet
 from apps.StudyMaterial.views import StudyMaterialViewSet, StudentSubmissionView
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 router = DefaultRouter()
 
@@ -65,6 +68,8 @@ urlpatterns = [
         name="redoc",
     ),
 ]
+
+
 
 
 if settings.DEBUG:

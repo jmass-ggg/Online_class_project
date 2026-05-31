@@ -8,9 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
+DEBUG=True
 SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
 
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
 
 AUTH_USER_MODEL = "users.User"
 
@@ -23,7 +24,7 @@ ALLOWED_HOSTS = [
 
 
 INSTALLED_APPS = [
-    # Django apps
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -31,13 +32,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party apps
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
     "corsheaders",
 
-    # Local apps
     "apps.courses",
     "apps.users",
     "apps.batch",
@@ -189,7 +188,6 @@ CELERY_TASK_TIME_LIMIT = 600
 CELERY_TASK_SOFT_TIME_LIMIT = 540
 
 
-# LiveKit
 LIVEKIT_URL = os.getenv("LIVEKIT_URL")
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
 LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET")

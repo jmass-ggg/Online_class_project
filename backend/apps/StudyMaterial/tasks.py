@@ -1,29 +1,32 @@
 import mimetypes
-from .models import CompressionStatus
+import os
 import subprocess
 import tempfile
 from pathlib import Path
-import os
+
 from celery import shared_task
 from django.apps import apps
 from django.core.files import File
 from django.db import transaction
 from PIL import Image, ImageOps
 
+from .models import CompressionStatus
+
 
 try:
     import magic
 except ImportError:
     magic = None
-    
+
 
 Image.MAX_IMAGE_PIXELS = 30_000_000
 
 
 def make_temp_file(suffix):
-    fd,path=tempfile.mkstemp(suffix=suffix)
+    fd, path = tempfile.mkstemp(suffix=suffix)
     os.close(fd)
     return path
+
 
 def copy_storage_file_to_temp(field_file):
     suffix = Path(field_file.name).suffix.lower()
@@ -36,6 +39,7 @@ def copy_storage_file_to_temp(field_file):
 
     return temp_path
 
+
 def detect_mime(path, original_name):
     if magic:
         return magic.from_file(path, mime=True)
@@ -43,33 +47,65 @@ def detect_mime(path, original_name):
     guessed_mime, _ = mimetypes.guess_type(original_name)
     return guessed_mime or "application/octet-stream"
 
-def compress_image(input_path):
-    output_path = make_temp_file(".jpg")
 
-    with Image.open(input_path) as f:
-        img = ImageOps.exif_transpose(f)
-        img.thumbnail((2000, 2000))
+def compress_image(input_path, original_name):
+    old_suffix = Path(original_name).suffix.lower()
 
-        if img.mode in ("RGBA", "LA", "P"):
-            img = img.convert("RGBA")
-            background = Image.new("RGB", img.size, (255, 255, 255))
-            background.paste(img, mask=img.split()[-1])
-            img = background
-        else:
-            img = img.convert("RGB")
+    if old_suffix in [".jpg", ".jpeg"]:
+        output_path = make_temp_file(old_suffix)
+        output_format = "JPEG"
+    elif old_suffix == ".png":
+        output_path = make_temp_file(".png")
+        output_format = "PNG"
+    elif old_suffix == ".webp":
+        output_path = make_temp_file(".webp")
+        output_format = "WEBP"
+    else:
+        output_path = make_temp_file(".jpg")
+        output_format = "JPEG"
 
-        img.save(
-            output_path,
-            "JPEG",
-            quality=75,
-            optimize=True,
-            progressive=True,
-        )
+    with Image.open(input_path) as file:
+        image = ImageOps.exif_transpose(file)
+        image.thumbnail((2000, 2000))
+
+        if output_format == "JPEG":
+            if image.mode in ("RGBA", "LA", "P"):
+                image = image.convert("RGBA")
+                background = Image.new("RGB", image.size, (255, 255, 255))
+                background.paste(image, mask=image.split()[-1])
+                image = background
+            else:
+                image = image.convert("RGB")
+
+            image.save(
+                output_path,
+                "JPEG",
+                quality=75,
+                optimize=True,
+                progressive=True,
+            )
+
+        elif output_format == "PNG":
+            image.save(
+                output_path,
+                "PNG",
+                optimize=True,
+            )
+
+        elif output_format == "WEBP":
+            image.save(
+                output_path,
+                "WEBP",
+                quality=75,
+                method=6,
+            )
 
     return output_path
-  
+
+
 def compress_pdf(input_path):
-    output_path=make_temp_file(".pdf")
+    output_path = make_temp_file(".pdf")
+
     command = [
         "gs",
         "-sDEVICE=pdfwrite",
@@ -82,20 +118,30 @@ def compress_pdf(input_path):
         f"-sOutputFile={output_path}",
         input_path,
     ]
+
     subprocess.run(
         command,
         check=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         timeout=300,
-    )          
+    )
+
     return output_path
 
-def get_new_file_name(old_name,output_path,mime_type):
-    old_path=Path(old_name)
-    if mime_type.startswith("image/"):
-        return str(old_path.with_suffix(".jpg"))
-    return old_name
+
+def save_compressed_file_to_same_name(file_field, old_file_name, output_path):
+    storage = file_field.storage
+
+    if storage.exists(old_file_name):
+        storage.delete(old_file_name)
+
+    with open(output_path, "rb") as compressed_file:
+        saved_name = storage.save(old_file_name, File(compressed_file))
+
+    file_field.name = saved_name
+
+    return saved_name
 
 @shared_task(
     bind=True,
@@ -122,23 +168,22 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
             obj.save(update_fields=["compression_status", "compression_error"])
 
         obj = Model.objects.get(pk=object_id)
-        original_field = getattr(obj, original_field_name)
+        file_field = getattr(obj, original_field_name)
 
-        if not original_field:
+        if not file_field:
             Model.objects.filter(pk=object_id).update(
                 compression_status=CompressionStatus.SKIPPED,
                 compression_error="No file found.",
             )
             return "No file found"
 
-        old_file_name = original_field.name
-        storage = original_field.storage
+        old_file_name = file_field.name
 
-        input_path = copy_storage_file_to_temp(original_field)
+        input_path = copy_storage_file_to_temp(file_field)
         mime_type = detect_mime(input_path, old_file_name)
 
         if mime_type.startswith("image/"):
-            output_path = compress_image(input_path)
+            output_path = compress_image(input_path, old_file_name)
         elif mime_type == "application/pdf":
             output_path = compress_pdf(input_path)
         else:
@@ -149,7 +194,7 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
             )
             return f"Unsupported MIME type: {mime_type}"
 
-        original_size = original_field.size or os.path.getsize(input_path)
+        original_size = file_field.size or os.path.getsize(input_path)
         compressed_size = os.path.getsize(output_path)
 
         if compressed_size >= original_size:
@@ -165,17 +210,11 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
         obj = Model.objects.get(pk=object_id)
         file_field = getattr(obj, original_field_name)
 
-        new_file_name = get_new_file_name(old_file_name, output_path, mime_type)
-
-        if storage.exists(old_file_name):
-            storage.delete(old_file_name)
-
-        with open(output_path, "rb") as compressed:
-            file_field.save(
-                new_file_name,
-                File(compressed),
-                save=False,
-            )
+        save_compressed_file_to_same_name(
+            file_field=file_field,
+            old_file_name=old_file_name,
+            output_path=output_path,
+        )
 
         obj.original_size = original_size
         obj.compressed_size = compressed_size
@@ -183,14 +222,16 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
         obj.compression_status = CompressionStatus.DONE
         obj.compression_error = ""
 
-        obj.save(update_fields=[
-            original_field_name,
-            "compression_status",
-            "original_size",
-            "compressed_size",
-            "mime_type",
-            "compression_error",
-        ])
+        obj.save(
+            update_fields=[
+                original_field_name,
+                "compression_status",
+                "original_size",
+                "compressed_size",
+                "mime_type",
+                "compression_error",
+            ]
+        )
 
         return "Compression finished and original file replaced"
 
@@ -204,7 +245,7 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
 
         raise self.retry(
             exc=exc,
-            countdown=min(60 * (2 ** self.request.retries), 300),
+            countdown=min(60 * (2**self.request.retries), 300),
         )
 
     finally:
@@ -216,6 +257,8 @@ def compress_uploaded_file(self, model_label, object_id, original_field_name):
                     pass
                 
                 
+
+
 # Student uploads photo/PDF
 #         ↓
 # File saved in original folder

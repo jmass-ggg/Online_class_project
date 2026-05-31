@@ -7,6 +7,8 @@ function teacherLinks() {
     ["Courses", "/teacher/courses", "▣"],
     ["Classrooms", "/teacher/batches", "▤"],
     ["Live Classes", "/teacher/sessions", "◉"],
+    ["Assignments", "/teacher/assignments", "▧"],
+    ["Submissions", "/teacher/submissions", "⇪"],
   ];
 }
 
@@ -16,6 +18,8 @@ function studentLinks() {
     ["Join Classroom", "/student/join-classroom", "+"],
     ["My Classrooms", "/student/batches", "▤"],
     ["Live Classes", "/student/sessions", "◉"],
+    ["Assignments", "/student/assignments", "▧"],
+    ["My Submissions", "/student/submissions", "⇪"],
   ];
 }
 
@@ -48,10 +52,12 @@ export default function Sidebar({ onNavigate }) {
       </nav>
 
       <div className="sidebar-note">
-        <strong>{user?.role === "TEACHER" ? "Teacher Account" : "Student Account"}</strong>
+        <strong>
+          {user?.role === "TEACHER" ? "Teacher Account" : "Student Account"}
+        </strong>
         <span>
-          Manage learning, live classes, enrollment codes, and progress from one
-          clean workspace.
+          Manage learning, live classes, enrollment codes, assignments, and
+          submissions from one clean workspace.
         </span>
       </div>
     </aside>
