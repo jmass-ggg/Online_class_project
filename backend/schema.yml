@@ -1,0 +1,1894 @@
+openapi: 3.0.3
+info:
+  title: My API
+  version: 1.0.0
+  description: API documentation for my project
+paths:
+  /api/Batch/:
+    get:
+      operationId: Batch_list
+      description: Get all batches.
+      summary: List all batches
+      tags:
+      - Batch
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Batch'
+          description: ''
+    post:
+      operationId: Batch_create
+      description: Teacher creates a batch.
+      summary: Create batch
+      tags:
+      - Batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/Batch/{id}/:
+    get:
+      operationId: Batch_retrieve
+      description: Retrieve a single batch using batch ID.
+      summary: Get batch by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this batch.
+        required: true
+      tags:
+      - Batch
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+    put:
+      operationId: Batch_update
+      summary: Update batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this batch.
+        required: true
+      tags:
+      - Batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+    patch:
+      operationId: Batch_partial_update
+      summary: Partially update batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this batch.
+        required: true
+      tags:
+      - Batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchCreateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+    delete:
+      operationId: Batch_destroy
+      summary: Delete batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this batch.
+        required: true
+      tags:
+      - Batch
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/ClassSession/:
+    get:
+      operationId: ClassSession_list
+      summary: List all class sessions
+      tags:
+      - ClassSession
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassSession'
+          description: ''
+    post:
+      operationId: ClassSession_create
+      summary: Create live class session
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/ClassSession/{id}/:
+    get:
+      operationId: ClassSession_retrieve
+      summary: Get class session by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+    put:
+      operationId: ClassSession_update
+      summary: Update class session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+    patch:
+      operationId: ClassSession_partial_update
+      summary: Partially update class session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClassSessionCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClassSessionCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClassSessionCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+    delete:
+      operationId: ClassSession_destroy
+      summary: Delete class session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/ClassSession/{id}/attendance/:
+    get:
+      operationId: ClassSession_attendance_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/ClassSession/{id}/cancel/:
+    post:
+      operationId: ClassSession_cancel_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/ClassSession/{id}/complete/:
+    post:
+      operationId: ClassSession_complete_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/ClassSession/{id}/join/:
+    post:
+      operationId: ClassSession_join_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/ClassSession/{id}/start/:
+    post:
+      operationId: ClassSession_start_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this class session.
+        required: true
+      tags:
+      - ClassSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClassSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassSession'
+          description: ''
+  /api/Course/:
+    get:
+      operationId: Course_list
+      description: Retrieve all available courses ordered by latest created.
+      summary: List all courses
+      tags:
+      - Courses
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+          description: ''
+    post:
+      operationId: Course_create
+      description: Admin creates a new course. `created_by` is auto-assigned.
+      summary: Create a course
+      tags:
+      - Courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+  /api/Course/{id}/:
+    get:
+      operationId: Course_retrieve
+      summary: Get course detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this course.
+        required: true
+      tags:
+      - Courses
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    put:
+      operationId: Course_update
+      summary: Update course
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this course.
+        required: true
+      tags:
+      - Courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    patch:
+      operationId: Course_partial_update
+      summary: Partially update course
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this course.
+        required: true
+      tags:
+      - Courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseCreateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    delete:
+      operationId: Course_destroy
+      description: Deletes a course permanently.
+      summary: Delete course
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this course.
+        required: true
+      tags:
+      - Courses
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/StudyMaterial/:
+    get:
+      operationId: StudyMaterial_list
+      description: Retrieve all study materials.
+      summary: List Study Materials
+      tags:
+      - Study Material
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudyMaterialserializer'
+          description: ''
+    post:
+      operationId: StudyMaterial_create
+      description: Create study material with multiple file uploads.
+      summary: Create Study Material
+      tags:
+      - Study Material
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialserializerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialserializerRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterialserializer'
+          description: ''
+  /api/StudyMaterial/{id}/:
+    get:
+      operationId: StudyMaterial_retrieve
+      description: Retrieve single study material with files.
+      summary: Retrieve Study Material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this study material.
+        required: true
+      tags:
+      - Study Material
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterialserializer'
+          description: ''
+    put:
+      operationId: StudyMaterial_update
+      summary: Update Study Material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this study material.
+        required: true
+      tags:
+      - Study Material
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialserializerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialserializerRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterialserializer'
+          description: ''
+    patch:
+      operationId: StudyMaterial_partial_update
+      summary: Partial Update Study Material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this study material.
+        required: true
+      tags:
+      - Study Material
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudyMaterialserializerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudyMaterialserializerRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterialserializer'
+          description: ''
+    delete:
+      operationId: StudyMaterial_destroy
+      summary: Delete Study Material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this study material.
+        required: true
+      tags:
+      - Study Material
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/Submission/:
+    get:
+      operationId: Submission_list
+      tags:
+      - Submission
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubmissionSerializers'
+          description: ''
+    post:
+      operationId: Submission_create
+      tags:
+      - Submission
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmissionSerializersRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubmissionSerializersRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionSerializers'
+          description: ''
+  /api/Submission/{id}/:
+    get:
+      operationId: Submission_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this submission.
+        required: true
+      tags:
+      - Submission
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionSerializers'
+          description: ''
+    put:
+      operationId: Submission_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this submission.
+        required: true
+      tags:
+      - Submission
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmissionSerializersRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubmissionSerializersRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionSerializers'
+          description: ''
+    patch:
+      operationId: Submission_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this submission.
+        required: true
+      tags:
+      - Submission
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubmissionSerializersRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubmissionSerializersRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionSerializers'
+          description: ''
+    delete:
+      operationId: Submission_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this submission.
+        required: true
+      tags:
+      - Submission
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/me/student/:
+    get:
+      operationId: auth_me_student_retrieve
+      tags:
+      - Auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+          description: ''
+  /api/auth/me/teacher/:
+    get:
+      operationId: auth_me_teacher_retrieve
+      tags:
+      - Auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherProfile'
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      tags:
+      - auth
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/student/register/:
+    post:
+      operationId: auth_student_register_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentRegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentRegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRegister'
+          description: ''
+  /api/auth/teacher/register/:
+    post:
+      operationId: auth_teacher_register_create
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherRegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeacherRegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeacherRegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherRegister'
+          description: ''
+  /api/enrollment/join/:
+    post:
+      operationId: enrollment_join_create
+      description: Join a batch using enrollment code
+      summary: Join Batch
+      tags:
+      - enrollment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinClassroomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JoinClassroomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JoinClassroomRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      enrollment_id:
+                        type: integer
+                      batch_id:
+                        type: integer
+                      batch_name:
+                        type: string
+                      status:
+                        type: string
+          description: Successfully joined batch
+  /api/enrollment/my-classrooms/:
+    get:
+      operationId: enrollment_my_classrooms_list
+      tags:
+      - enrollment
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnrollmentList'
+          description: ''
+components:
+  schemas:
+    Batch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        course:
+          type: string
+          format: uuid
+        course_title:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        enrollment_code:
+          type: string
+          readOnly: true
+        max_students:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        allow_self_enrollment:
+          type: boolean
+        is_active:
+          type: boolean
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - course
+      - course_title
+      - created_at
+      - enrollment_code
+      - id
+      - name
+      - start_date
+      - teacher
+      - updated_at
+    BatchCreateRequest:
+      type: object
+      properties:
+        course:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        max_students:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        allow_self_enrollment:
+          type: boolean
+        is_active:
+          type: boolean
+        start_date:
+          type: string
+          format: date
+      required:
+      - course
+      - name
+      - start_date
+    CategoryEnum:
+      enum:
+      - PROGRAMMING
+      - DESIGN
+      - BUSINESS
+      - MARKETING
+      - DATA_SCIENCE
+      - LANGUAGE
+      - OTHER
+      type: string
+      description: |-
+        * `PROGRAMMING` - Programming
+        * `DESIGN` - Design
+        * `BUSINESS` - Business
+        * `MARKETING` - Marketing
+        * `DATA_SCIENCE` - Data Science
+        * `LANGUAGE` - Language
+        * `OTHER` - Other
+    ClassSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        classroom:
+          type: string
+          format: uuid
+        classroom_name:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          readOnly: true
+        scheduled_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        livekit_room_name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ClassSessionStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - classroom
+      - classroom_name
+      - created_at
+      - end_time
+      - id
+      - livekit_room_name
+      - scheduled_date
+      - start_time
+      - status
+      - teacher
+      - updated_at
+    ClassSessionCreateUpdateRequest:
+      type: object
+      properties:
+        classroom:
+          type: string
+          format: uuid
+        scheduled_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+      required:
+      - classroom
+      - end_time
+      - scheduled_date
+      - start_time
+    ClassSessionRequest:
+      type: object
+      properties:
+        classroom:
+          type: string
+          format: uuid
+        scheduled_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+      required:
+      - classroom
+      - end_time
+      - scheduled_date
+      - start_time
+    ClassSessionStatusEnum:
+      enum:
+      - UPCOMING
+      - LIVE
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `UPCOMING` - Upcoming
+        * `LIVE` - Live
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
+    CompressionStatusEnum:
+      enum:
+      - PENDING
+      - PROCESSING
+      - DONE
+      - FAILED
+      - SKIPPED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `PROCESSING` - Processing
+        * `DONE` - Done
+        * `FAILED` - Failed
+        * `SKIPPED` - Skipped
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        duration_weeks:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+      required:
+      - created_by
+      - description
+      - duration_weeks
+      - id
+      - is_active
+      - level
+      - title
+    CourseCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        duration_weeks:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - description
+      - duration_weeks
+      - level
+      - title
+    EnrollmentList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        batch:
+          allOf:
+          - $ref: '#/components/schemas/Batch'
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/EnrollmentListStatusEnum'
+        enrolled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - batch
+      - enrolled_at
+      - id
+      - updated_at
+    EnrollmentListStatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - REJECTED
+      - DROPPED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `APPROVED` - Approved
+        * `REJECTED` - Rejected
+        * `DROPPED` - Dropped
+    JoinClassroomRequest:
+      type: object
+      properties:
+        join_code:
+          type: string
+          minLength: 1
+      required:
+      - join_code
+    LevelEnum:
+      enum:
+      - BEGINNER
+      - INTERMEDIATE
+      - ADVANCED
+      type: string
+      description: |-
+        * `BEGINNER` - Beginner
+        * `INTERMEDIATE` - Intermediate
+        * `ADVANCED` - Advanced
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    PatchedBatchCreateRequest:
+      type: object
+      properties:
+        course:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        max_students:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        allow_self_enrollment:
+          type: boolean
+        is_active:
+          type: boolean
+        start_date:
+          type: string
+          format: date
+    PatchedClassSessionCreateUpdateRequest:
+      type: object
+      properties:
+        classroom:
+          type: string
+          format: uuid
+        scheduled_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+    PatchedCourseCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        duration_weeks:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+    PatchedStudyMaterialserializerRequest:
+      type: object
+      properties:
+        classroom:
+          type: string
+          format: uuid
+        uploaded_images:
+          type: array
+          items:
+            type: string
+            format: binary
+          writeOnly: true
+    PatchedSubmissionSerializersRequest:
+      type: object
+      properties:
+        assignment:
+          type: string
+          format: uuid
+        submitted_file:
+          type: string
+          format: binary
+          nullable: true
+    RoleEnum:
+      enum:
+      - ADMIN
+      - TEACHER
+      - STUDENT
+      type: string
+      description: |-
+        * `ADMIN` - Admin
+        * `TEACHER` - Teacher
+        * `STUDENT` - Student
+    StudentProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        address:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        guardian_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - user
+    StudentRegister:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        guardian_name:
+          type: string
+          nullable: true
+      required:
+      - email
+      - full_name
+    StudentRegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+        address:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        guardian_name:
+          type: string
+          nullable: true
+      required:
+      - email
+      - full_name
+      - password
+    StudyMaterialImageserializer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        file:
+          type: string
+          format: uri
+        file_url:
+          type: string
+          readOnly: true
+        compression_status:
+          allOf:
+          - $ref: '#/components/schemas/CompressionStatusEnum'
+          readOnly: true
+        original_size:
+          type: integer
+          readOnly: true
+          nullable: true
+        compressed_size:
+          type: integer
+          readOnly: true
+          nullable: true
+        mime_type:
+          type: string
+          readOnly: true
+        compression_error:
+          type: string
+          readOnly: true
+      required:
+      - compressed_size
+      - compression_error
+      - compression_status
+      - file
+      - file_url
+      - id
+      - mime_type
+      - original_size
+    StudyMaterialImageserializerRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+      - file
+    StudyMaterialserializer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        classroom:
+          type: string
+          format: uuid
+        upload_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        upload_at:
+          type: string
+          format: date-time
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyMaterialImageserializer'
+          readOnly: true
+      required:
+      - classroom
+      - id
+      - images
+      - upload_at
+      - upload_by
+    StudyMaterialserializerRequest:
+      type: object
+      properties:
+        classroom:
+          type: string
+          format: uuid
+        uploaded_images:
+          type: array
+          items:
+            type: string
+            format: binary
+          writeOnly: true
+      required:
+      - classroom
+    SubmissionSerializers:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        assignment:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        submitted_file:
+          type: string
+          format: uri
+          nullable: true
+        submitted_file_url:
+          type: string
+          readOnly: true
+        compression_status:
+          allOf:
+          - $ref: '#/components/schemas/CompressionStatusEnum'
+          readOnly: true
+        original_size:
+          type: integer
+          readOnly: true
+          nullable: true
+        compressed_size:
+          type: integer
+          readOnly: true
+          nullable: true
+        mime_type:
+          type: string
+          readOnly: true
+        compression_error:
+          type: string
+          readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assignment
+      - compressed_size
+      - compression_error
+      - compression_status
+      - id
+      - mime_type
+      - original_size
+      - student
+      - student_name
+      - submitted_at
+      - submitted_file_url
+    SubmissionSerializersRequest:
+      type: object
+      properties:
+        assignment:
+          type: string
+          format: uuid
+        submitted_file:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - assignment
+    TeacherProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        qualification:
+          type: string
+          maxLength: 150
+        experience:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        bio:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - user
+    TeacherRegister:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        qualification:
+          type: string
+        experience:
+          type: integer
+          default: 0
+        bio:
+          type: string
+          nullable: true
+      required:
+      - email
+      - full_name
+    TeacherRegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+        qualification:
+          type: string
+        experience:
+          type: integer
+          default: 0
+        bio:
+          type: string
+          nullable: true
+      required:
+      - email
+      - full_name
+      - password
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 50
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - full_name
+      - id
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
