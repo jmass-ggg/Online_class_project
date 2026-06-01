@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageHeader from "../../components/PageHeader.jsx";
 import Loader from "../../components/Loader.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
-import BatchCard from "../../components/BatchCard.jsx";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import StatusBadge from "../../components/StatusBadge.jsx";
 import CopyButton from "../../components/CopyButton.jsx";
@@ -32,6 +31,42 @@ function getResults(data) {
   return Array.isArray(data) ? data : data?.results || [];
 }
 
+function getBatchName(batch) {
+  return (
+    batch?.name ||
+    batch?.batch_name ||
+    batch?.classroom_name ||
+    `Classroom ${batch?.id || ""}`
+  );
+}
+
+function getCourseTitle(batch) {
+  if (typeof batch?.course === "object") {
+    return batch.course?.title || batch.course?.name || "Course";
+  }
+
+  return batch?.course_title || batch?.course_name || "Course";
+}
+
+function getStudentsCount(batch) {
+  return (
+    batch?.students_count ||
+    batch?.student_count ||
+    batch?.enrolled_students ||
+    batch?.enrollment_count ||
+    batch?.total_students ||
+    0
+  );
+}
+
+function getEnrollmentCode(batch) {
+  return batch?.enrollment_code || batch?.code || "—";
+}
+
+function getBatchStatus(batch) {
+  return batch?.is_active === false ? "INACTIVE" : "ACTIVE";
+}
+
 export default function TeacherBatches() {
   const [batches, setBatches] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -47,6 +82,9 @@ export default function TeacherBatches() {
   const [form, setForm] = useState(initialBatchForm);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const { showToast } = useToast();
 
@@ -80,6 +118,42 @@ export default function TeacherBatches() {
     load();
     loadCourses();
   }, []);
+
+  const classroomStats = useMemo(() => {
+    const totalStudents = batches.reduce((total, batch) => {
+      return total + Number(getStudentsCount(batch) || 0);
+    }, 0);
+
+    return {
+      totalClassrooms: batches.length,
+      totalStudents,
+    };
+  }, [batches]);
+
+  const filteredBatches = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    return batches.filter((batch) => {
+      const matchesSearch = query
+        ? [
+            getBatchName(batch),
+            getCourseTitle(batch),
+            getEnrollmentCode(batch),
+            getBatchStatus(batch),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(query)
+        : true;
+
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "ACTIVE" && batch.is_active !== false) ||
+        (statusFilter === "INACTIVE" && batch.is_active === false);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [batches, searchTerm, statusFilter]);
 
   const closePopup = () => {
     setPopupMode(null);
@@ -306,7 +380,7 @@ export default function TeacherBatches() {
             name="name"
             value={form.name || ""}
             onChange={updateForm}
-            placeholder="Python Morning Batch"
+            placeholder="Introduction to Programming — Batch A"
           />
         </label>
 
@@ -390,40 +464,169 @@ export default function TeacherBatches() {
   if (loading) return <Loader label="Loading classrooms" />;
 
   return (
-    <div className="page-stack">
+    <div className="page-stack teacher-classrooms-page">
       <PageHeader
-        title="Classrooms / Batches"
-        description="Share enrollment codes and schedule live classes for each classroom."
+        eyebrow="Classrooms"
+        title="Manage your classrooms"
+        description="Organize students into batches and manage enrollment codes."
         actions={
           <button className="btn btn-primary" type="button" onClick={openCreate}>
-            Create classroom
+            + Create Classroom
           </button>
         }
       />
 
-      {batches.length ? (
-        <div className="card-grid">
-          {batches.map((batch) => (
-            <BatchCard
-              key={batch.id}
-              batch={batch}
-              onDelete={setTarget}
-              onRegenerate={regenerate}
-              onView={openDetails}
-              onEdit={openEdit}
-            />
-          ))}
+      <section className="classroom-stats-grid">
+        <article className="classroom-stat-card">
+          <div>
+            <span>Total Classrooms</span>
+            <strong>{classroomStats.totalClassrooms}</strong>
+            <small>Active and inactive batches</small>
+          </div>
+
+          <em aria-hidden="true">♧</em>
+        </article>
+
+        <article className="classroom-stat-card">
+          <div>
+            <span>Enrolled Students</span>
+            <strong>{classroomStats.totalStudents}</strong>
+            <small>Across all classrooms</small>
+          </div>
+
+          <em aria-hidden="true">✥</em>
+        </article>
+      </section>
+
+      <section className="classroom-list-section">
+        <div className="classroom-list-toolbar">
+          <h3>All Classrooms</h3>
+
+          <div className="classroom-toolbar-actions">
+            <div className="classroom-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                placeholder="Search classrooms..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </div>
+
+            <div className="classroom-filter-pills" aria-label="Classroom status filter">
+              <button
+                type="button"
+                className={statusFilter === "ALL" ? "active" : ""}
+                onClick={() => setStatusFilter("ALL")}
+              >
+                All
+              </button>
+
+              <button
+                type="button"
+                className={statusFilter === "ACTIVE" ? "active" : ""}
+                onClick={() => setStatusFilter("ACTIVE")}
+              >
+                Active
+              </button>
+
+              <button
+                type="button"
+                className={statusFilter === "INACTIVE" ? "active" : ""}
+                onClick={() => setStatusFilter("INACTIVE")}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <EmptyState
-          title="Create your first classroom"
-          action={
-            <button className="btn btn-primary" type="button" onClick={openCreate}>
-              Create Classroom
-            </button>
-          }
-        />
-      )}
+
+        {filteredBatches.length ? (
+          <div className="classroom-card-grid">
+            {filteredBatches.map((batch, index) => {
+              const status = getBatchStatus(batch);
+              const courseTitle = getCourseTitle(batch);
+              const batchName = getBatchName(batch);
+              const enrollmentCode = getEnrollmentCode(batch);
+              const studentsCount = getStudentsCount(batch);
+
+              return (
+                <article key={batch.id} className="classroom-card">
+                  <div className="classroom-card-top">
+                    <span className="classroom-batch-pill">
+                      {index % 2 === 0 ? "Batch A" : "Batch B"}
+                    </span>
+
+                    <StatusBadge status={status} />
+                  </div>
+
+                  <h3>{batchName}</h3>
+
+                  <div className="classroom-card-meta">
+                    <span>
+                      <small>Course</small>
+                      <strong>{courseTitle}</strong>
+                    </span>
+
+                    <span>
+                      <small>Students</small>
+                      <strong>{studentsCount} enrolled</strong>
+                    </span>
+
+                    <span className="classroom-code-meta">
+  <small>Enrollment Code</small>
+
+  <div className="classroom-code-box-small">
+    <strong>{enrollmentCode}</strong>
+
+    {enrollmentCode && enrollmentCode !== "—" && (
+      <CopyButton value={enrollmentCode} />
+    )}
+  </div>
+</span>
+                  </div>
+
+                  <div className="classroom-card-actions">
+                    <button
+                      className="btn btn-primary"
+                      type="button"
+                      onClick={() => openDetails(batch)}
+                    >
+                      View details
+                    </button>
+
+                    <button
+                      className="btn btn-ghost"
+                      type="button"
+                      onClick={() => openEdit(batch)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="btn btn-danger"
+                      type="button"
+                      onClick={() => setTarget(batch)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            title="No classrooms found"
+            message="Create a classroom or adjust your search/filter."
+            action={
+              <button className="btn btn-primary" type="button" onClick={openCreate}>
+                Create Classroom
+              </button>
+            }
+          />
+        )}
+      </section>
 
       {popupMode && (
         <div className="drawer-layer" role="dialog" aria-modal="true">
@@ -452,7 +655,7 @@ export default function TeacherBatches() {
                     ? "Create a classroom under a course."
                     : popupMode === "edit"
                       ? "Update classroom information."
-                      : "Single classroom information from get batch by ID API."}
+                      : "View classroom enrollment and schedule details."}
                 </p>
               </div>
 
@@ -463,7 +666,8 @@ export default function TeacherBatches() {
 
             {popupLoading && <div className="popup-loading">Loading...</div>}
 
-            {!popupLoading && popupMode === "create" &&
+            {!popupLoading &&
+              popupMode === "create" &&
               renderBatchForm(submitCreate, "Create classroom")}
 
             {!popupLoading && popupMode === "details" && selectedBatch && (
@@ -472,27 +676,21 @@ export default function TeacherBatches() {
                   <div className="details-hero">
                     <div className="card-topline">
                       <span className="pill">
-                        {selectedBatch.course_title || `Course #${selectedBatch.course}`}
+                        {getCourseTitle(selectedBatch)}
                       </span>
 
-                      <StatusBadge
-                        status={
-                          selectedBatch.is_active === false ? "INACTIVE" : "ACTIVE"
-                        }
-                      />
+                      <StatusBadge status={getBatchStatus(selectedBatch)} />
                     </div>
 
-                    <h3>{selectedBatch.name}</h3>
+                    <h3>{getBatchName(selectedBatch)}</h3>
 
                     <div className="enrollment-code-box">
                       <div>
                         <span>Enrollment code</span>
-                        <strong>
-                          {selectedBatch.enrollment_code || "Not generated"}
-                        </strong>
+                        <strong>{getEnrollmentCode(selectedBatch)}</strong>
                       </div>
 
-                      <CopyButton value={selectedBatch.enrollment_code} />
+                      <CopyButton value={getEnrollmentCode(selectedBatch)} />
                     </div>
                   </div>
 
@@ -545,6 +743,14 @@ export default function TeacherBatches() {
                     Edit
                   </button>
 
+                  <button
+                    className="btn btn-secondary"
+                    type="button"
+                    onClick={() => regenerate(selectedBatch)}
+                  >
+                    Regenerate code
+                  </button>
+
                   <Link
                     className="btn btn-primary"
                     to="/teacher/sessions/create"
@@ -556,7 +762,9 @@ export default function TeacherBatches() {
               </>
             )}
 
-            {!popupLoading && popupMode === "edit" && selectedBatch &&
+            {!popupLoading &&
+              popupMode === "edit" &&
+              selectedBatch &&
               renderBatchForm(submitEdit, "Save")}
           </aside>
         </div>
@@ -565,7 +773,7 @@ export default function TeacherBatches() {
       <ConfirmDialog
         open={Boolean(target)}
         title="Delete classroom"
-        message={`Delete ${target?.name || "this classroom"}?`}
+        message={`Delete ${getBatchName(target) || "this classroom"}?`}
         onClose={() => setTarget(null)}
         onConfirm={confirmDelete}
         loading={deleting}
