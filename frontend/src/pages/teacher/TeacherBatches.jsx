@@ -21,12 +21,16 @@ const initialBatchForm = {
   course: "",
   name: "",
   description: "",
-  max_students: "",
+  max_students: 20,
   start_date: "",
   end_date: "",
   allow_self_enrollment: true,
   is_active: true,
 };
+
+function getResults(data) {
+  return Array.isArray(data) ? data : data?.results || [];
+}
 
 export default function TeacherBatches() {
   const [batches, setBatches] = useState([]);
@@ -51,7 +55,7 @@ export default function TeacherBatches() {
 
     try {
       const response = await batchApi.getBatches();
-      setBatches(response.data || []);
+      setBatches(getResults(response.data));
     } catch (err) {
       showToast(parseApiError(err), "error");
     } finally {
@@ -62,10 +66,7 @@ export default function TeacherBatches() {
   const loadCourses = async () => {
     try {
       const response = await courseApi.getCourses();
-
-      const results = Array.isArray(response.data)
-        ? response.data
-        : response.data?.results || [];
+      const results = getResults(response.data);
 
       setCourses(results);
       return results;
@@ -87,6 +88,19 @@ export default function TeacherBatches() {
     setForm(initialBatchForm);
     setFormError("");
     setSaving(false);
+  };
+
+  const openCreate = async () => {
+    setPopupMode("create");
+    setPopupLoading(false);
+    setSelectedBatch(null);
+    setForm(initialBatchForm);
+    setFormError("");
+    setSaving(false);
+
+    if (!courses.length) {
+      await loadCourses();
+    }
   };
 
   const fillForm = (batch) => {
@@ -149,45 +163,77 @@ export default function TeacherBatches() {
     }));
   };
 
+  const validateBatchForm = () => {
+    if (!required(form.course)) return "Course is required";
+    if (!required(form.name)) return "Classroom name is required";
+
+    if (!required(form.max_students) || Number(form.max_students) <= 0) {
+      return "Max students must be positive";
+    }
+
+    if (!required(form.start_date)) {
+      return "Start date is required";
+    }
+
+    const dateError = validateDateRange(form.start_date, form.end_date);
+
+    if (dateError) return dateError;
+
+    return "";
+  };
+
+  const getBatchPayload = () => ({
+    course: Number(form.course),
+    name: form.name.trim(),
+    description: form.description?.trim() || "",
+    max_students: Number(form.max_students),
+    start_date: form.start_date || "",
+    end_date: form.end_date || "",
+    allow_self_enrollment: Boolean(form.allow_self_enrollment),
+    is_active: Boolean(form.is_active),
+  });
+
+  const submitCreate = async (event) => {
+    event.preventDefault();
+    setFormError("");
+
+    const validationError = validateBatchForm();
+
+    if (validationError) {
+      return setFormError(validationError);
+    }
+
+    try {
+      setSaving(true);
+
+      await batchApi.createBatch(getBatchPayload());
+
+      showToast("Classroom created", "success");
+      closePopup();
+      load();
+    } catch (err) {
+      setFormError(parseApiError(err, "Could not create classroom"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const submitEdit = async (event) => {
     event.preventDefault();
     setFormError("");
 
     if (!selectedBatch) return;
 
-    if (!required(form.course)) {
-      return setFormError("Course is required");
+    const validationError = validateBatchForm();
+
+    if (validationError) {
+      return setFormError(validationError);
     }
-
-    if (!required(form.name)) {
-      return setFormError("Classroom name is required");
-    }
-
-    if (!required(form.max_students) || Number(form.max_students) <= 0) {
-      return setFormError("Max students must be positive");
-    }
-
-    const dateError = validateDateRange(form.start_date, form.end_date);
-
-    if (dateError) {
-      return setFormError(dateError);
-    }
-
-    const payload = {
-      course: Number(form.course),
-      name: form.name.trim(),
-      description: form.description?.trim() || "",
-      max_students: Number(form.max_students),
-      start_date: form.start_date || "",
-      end_date: form.end_date || "",
-      allow_self_enrollment: Boolean(form.allow_self_enrollment),
-      is_active: Boolean(form.is_active),
-    };
 
     try {
       setSaving(true);
 
-      await batchApi.updateBatch(selectedBatch.id, payload);
+      await batchApi.updateBatch(selectedBatch.id, getBatchPayload());
 
       showToast("Classroom updated", "success");
       closePopup();
@@ -236,6 +282,111 @@ export default function TeacherBatches() {
     }
   };
 
+  const renderBatchForm = (onSubmit, submitLabel) => (
+    <form className="drawer-form" onSubmit={onSubmit}>
+      <div className="drawer-body">
+        {formError && <div className="form-error">{formError}</div>}
+
+        <label>
+          Course
+          <select name="course" value={form.course || ""} onChange={updateForm}>
+            <option value="">Select course</option>
+
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Classroom name
+          <input
+            name="name"
+            value={form.name || ""}
+            onChange={updateForm}
+            placeholder="Python Morning Batch"
+          />
+        </label>
+
+        <label>
+          Description
+          <textarea
+            name="description"
+            value={form.description || ""}
+            onChange={updateForm}
+            rows="4"
+            placeholder="Describe this classroom"
+          />
+        </label>
+
+        <div className="two-column compact">
+          <label>
+            Max students
+            <input
+              type="number"
+              min="1"
+              name="max_students"
+              value={form.max_students || ""}
+              onChange={updateForm}
+            />
+          </label>
+
+          <label>
+            Start date
+            <input
+              type="date"
+              name="start_date"
+              value={form.start_date || ""}
+              onChange={updateForm}
+            />
+          </label>
+
+          <label>
+            End date
+            <input
+              type="date"
+              name="end_date"
+              value={form.end_date || ""}
+              onChange={updateForm}
+            />
+          </label>
+        </div>
+
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            name="allow_self_enrollment"
+            checked={Boolean(form.allow_self_enrollment)}
+            onChange={updateForm}
+          />
+          Allow self enrollment
+        </label>
+
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            name="is_active"
+            checked={Boolean(form.is_active)}
+            onChange={updateForm}
+          />
+          Classroom is active
+        </label>
+      </div>
+
+      <div className="drawer-footer">
+        <button className="btn btn-ghost" type="button" onClick={closePopup}>
+          Cancel
+        </button>
+
+        <button className="btn btn-primary" type="submit" disabled={saving}>
+          {saving ? "Saving..." : submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+
   if (loading) return <Loader label="Loading classrooms" />;
 
   return (
@@ -244,9 +395,9 @@ export default function TeacherBatches() {
         title="Classrooms / Batches"
         description="Share enrollment codes and schedule live classes for each classroom."
         actions={
-          <Link className="btn btn-primary" to="/teacher/batches/create">
+          <button className="btn btn-primary" type="button" onClick={openCreate}>
             Create classroom
-          </Link>
+          </button>
         }
       />
 
@@ -267,15 +418,15 @@ export default function TeacherBatches() {
         <EmptyState
           title="Create your first classroom"
           action={
-            <Link className="btn btn-primary" to="/teacher/batches/create">
+            <button className="btn btn-primary" type="button" onClick={openCreate}>
               Create Classroom
-            </Link>
+            </button>
           }
         />
       )}
 
       {popupMode && (
-        <div className="drawer-layer">
+        <div className="drawer-layer" role="dialog" aria-modal="true">
           <button
             className="drawer-backdrop"
             type="button"
@@ -289,14 +440,19 @@ export default function TeacherBatches() {
             <div className="drawer-header">
               <div>
                 <h2>
-                  {popupMode === "edit"
-                    ? "Edit Classroom"
-                    : "Classroom Details"}
+                  {popupMode === "create"
+                    ? "Create Classroom"
+                    : popupMode === "edit"
+                      ? "Edit Classroom"
+                      : "Classroom Details"}
                 </h2>
+
                 <p>
-                  {popupMode === "edit"
-                    ? "Update classroom information."
-                    : "Single classroom information from get batch by ID API."}
+                  {popupMode === "create"
+                    ? "Create a classroom under a course."
+                    : popupMode === "edit"
+                      ? "Update classroom information."
+                      : "Single classroom information from get batch by ID API."}
                 </p>
               </div>
 
@@ -307,21 +463,21 @@ export default function TeacherBatches() {
 
             {popupLoading && <div className="popup-loading">Loading...</div>}
 
+            {!popupLoading && popupMode === "create" &&
+              renderBatchForm(submitCreate, "Create classroom")}
+
             {!popupLoading && popupMode === "details" && selectedBatch && (
               <>
                 <div className="drawer-body">
                   <div className="details-hero">
                     <div className="card-topline">
                       <span className="pill">
-                        {selectedBatch.course_title ||
-                          `Course #${selectedBatch.course}`}
+                        {selectedBatch.course_title || `Course #${selectedBatch.course}`}
                       </span>
 
                       <StatusBadge
                         status={
-                          selectedBatch.is_active === false
-                            ? "INACTIVE"
-                            : "ACTIVE"
+                          selectedBatch.is_active === false ? "INACTIVE" : "ACTIVE"
                         }
                       />
                     </div>
@@ -371,9 +527,7 @@ export default function TeacherBatches() {
 
                     <span className="meta-wide">
                       <strong>Self enrollment</strong>
-                      {selectedBatch.allow_self_enrollment
-                        ? "Allowed"
-                        : "Disabled"}
+                      {selectedBatch.allow_self_enrollment ? "Allowed" : "Disabled"}
                     </span>
                   </div>
                 </div>
@@ -402,118 +556,8 @@ export default function TeacherBatches() {
               </>
             )}
 
-            {!popupLoading && popupMode === "edit" && selectedBatch && (
-              <form className="drawer-form" onSubmit={submitEdit}>
-                <div className="drawer-body">
-                  {formError && <div className="form-error">{formError}</div>}
-
-                  <label>
-                    Course
-                    <select
-                      name="course"
-                      value={form.course || ""}
-                      onChange={updateForm}
-                    >
-                      <option value="">Select course</option>
-
-                      {courses.map((course) => (
-                        <option key={course.id} value={course.id}>
-                          {course.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label>
-                    Classroom name
-                    <input
-                      name="name"
-                      value={form.name || ""}
-                      onChange={updateForm}
-                      placeholder="Python Morning Batch"
-                    />
-                  </label>
-
-                  <label>
-                    Description
-                    <textarea
-                      name="description"
-                      value={form.description || ""}
-                      onChange={updateForm}
-                      rows="4"
-                      placeholder="Describe this classroom"
-                    />
-                  </label>
-
-                  <div className="two-column compact">
-                    <label>
-                      Max students
-                      <input
-                        type="number"
-                        min="1"
-                        name="max_students"
-                        value={form.max_students || ""}
-                        onChange={updateForm}
-                      />
-                    </label>
-
-                    <label>
-                      Start date
-                      <input
-                        type="date"
-                        name="start_date"
-                        value={form.start_date || ""}
-                        onChange={updateForm}
-                      />
-                    </label>
-
-                    <label>
-                      End date
-                      <input
-                        type="date"
-                        name="end_date"
-                        value={form.end_date || ""}
-                        onChange={updateForm}
-                      />
-                    </label>
-                  </div>
-
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="allow_self_enrollment"
-                      checked={Boolean(form.allow_self_enrollment)}
-                      onChange={updateForm}
-                    />
-                    Allow self enrollment
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="is_active"
-                      checked={Boolean(form.is_active)}
-                      onChange={updateForm}
-                    />
-                    Classroom is active
-                  </label>
-                </div>
-
-                <div className="drawer-footer">
-                  <button
-                    className="btn btn-ghost"
-                    type="button"
-                    onClick={closePopup}
-                  >
-                    Cancel
-                  </button>
-
-                  <button className="btn btn-primary" type="submit" disabled={saving}>
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </form>
-            )}
+            {!popupLoading && popupMode === "edit" && selectedBatch &&
+              renderBatchForm(submitEdit, "Save")}
           </aside>
         </div>
       )}

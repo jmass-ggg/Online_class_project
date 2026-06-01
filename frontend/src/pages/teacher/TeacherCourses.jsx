@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import PageHeader from "../../components/PageHeader.jsx";
 import Loader from "../../components/Loader.jsx";
@@ -22,6 +21,10 @@ const initialForm = {
   duration_weeks: "",
 };
 
+function getResults(data) {
+  return Array.isArray(data) ? data : data?.results || [];
+}
+
 export default function TeacherCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +47,7 @@ export default function TeacherCourses() {
 
     try {
       const response = await courseApi.getCourses();
-      setCourses(response.data || []);
+      setCourses(getResults(response.data));
     } catch (err) {
       showToast(parseApiError(err), "error");
     } finally {
@@ -62,6 +65,15 @@ export default function TeacherCourses() {
     setSelectedCourse(null);
     setForm(initialForm);
     setFormError("");
+    setSaving(false);
+  };
+
+  const openCreate = () => {
+    setPopupMode("create");
+    setSelectedCourse(null);
+    setForm(initialForm);
+    setFormError("");
+    setSaving(false);
   };
 
   const fillForm = (course) => {
@@ -117,31 +129,68 @@ export default function TeacherCourses() {
     }));
   };
 
+  const validateCourseForm = () => {
+    if (!required(form.title)) return "Title is required";
+    if (!required(form.description)) return "Description is required";
+    if (!required(form.category)) return "Category is required";
+    if (!required(form.level)) return "Level is required";
+
+    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) {
+      return "Duration must be a positive number";
+    }
+
+    return "";
+  };
+
+  const getCoursePayload = () => ({
+    title: form.title.trim(),
+    description: form.description.trim(),
+    category: form.category,
+    level: form.level,
+    duration_weeks: Number(form.duration_weeks),
+  });
+
+  const submitCreate = async (event) => {
+    event.preventDefault();
+    setFormError("");
+
+    const validationError = validateCourseForm();
+
+    if (validationError) {
+      return setFormError(validationError);
+    }
+
+    try {
+      setSaving(true);
+
+      await courseApi.createCourse(getCoursePayload());
+
+      showToast("Course created", "success");
+      closePopup();
+      load();
+    } catch (err) {
+      setFormError(parseApiError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const submitEdit = async (event) => {
     event.preventDefault();
     setFormError("");
 
     if (!selectedCourse) return;
 
-    if (!required(form.title)) return setFormError("Title is required");
-    if (!required(form.description)) return setFormError("Description is required");
-    if (!required(form.category)) return setFormError("Category is required");
-    if (!required(form.level)) return setFormError("Level is required");
+    const validationError = validateCourseForm();
 
-    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) {
-      return setFormError("Duration must be a positive number");
+    if (validationError) {
+      return setFormError(validationError);
     }
 
     try {
       setSaving(true);
 
-      await courseApi.updateCourse(selectedCourse.id, {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        level: form.level,
-        duration_weeks: Number(form.duration_weeks),
-      });
+      await courseApi.updateCourse(selectedCourse.id, getCoursePayload());
 
       showToast("Course updated", "success");
       closePopup();
@@ -170,6 +219,85 @@ export default function TeacherCourses() {
     }
   };
 
+  const renderCourseForm = (onSubmit, submitLabel) => (
+    <form className="drawer-form" onSubmit={onSubmit}>
+      <div className="drawer-body">
+        {formError && <div className="form-error">{formError}</div>}
+
+        <label>
+          Title
+          <input
+            name="title"
+            value={form.title}
+            onChange={updateForm}
+            placeholder="Python Programming"
+          />
+        </label>
+
+        <label>
+          Description
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={updateForm}
+            rows="5"
+            placeholder="Learn Python from basic to advanced"
+          />
+        </label>
+
+        <div className="two-column compact">
+          <label>
+            Category
+            <select name="category" value={form.category} onChange={updateForm}>
+              <option value="">Select category</option>
+
+              {COURSE_CATEGORY_OPTIONS.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Level
+            <select name="level" value={form.level} onChange={updateForm}>
+              <option value="">Select level</option>
+
+              {COURSE_LEVEL_OPTIONS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Duration weeks
+          <input
+            type="number"
+            min="1"
+            name="duration_weeks"
+            value={form.duration_weeks}
+            onChange={updateForm}
+            placeholder="8"
+          />
+        </label>
+      </div>
+
+      <div className="drawer-footer">
+        <button className="btn btn-ghost" type="button" onClick={closePopup}>
+          Cancel
+        </button>
+
+        <button className="btn btn-primary" type="submit" disabled={saving}>
+          {saving ? "Saving..." : submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+
   if (loading) return <Loader label="Loading courses" />;
 
   return (
@@ -178,9 +306,9 @@ export default function TeacherCourses() {
         title="Courses"
         description="Create and manage teacher-owned courses."
         actions={
-          <Link className="btn btn-primary" to="/teacher/courses/create">
+          <button className="btn btn-primary" type="button" onClick={openCreate}>
             Create course
-          </Link>
+          </button>
         }
       />
 
@@ -200,15 +328,15 @@ export default function TeacherCourses() {
         <EmptyState
           title="Create your first course"
           action={
-            <Link className="btn btn-primary" to="/teacher/courses/create">
+            <button className="btn btn-primary" type="button" onClick={openCreate}>
               Create Course
-            </Link>
+            </button>
           }
         />
       )}
 
       {popupMode && (
-        <div className="drawer-layer">
+        <div className="drawer-layer" role="dialog" aria-modal="true">
           <button
             className="drawer-backdrop"
             type="button"
@@ -221,11 +349,20 @@ export default function TeacherCourses() {
 
             <div className="drawer-header">
               <div>
-                <h2>{popupMode === "edit" ? "Edit Course" : "Course Details"}</h2>
+                <h2>
+                  {popupMode === "create"
+                    ? "Create Course"
+                    : popupMode === "edit"
+                      ? "Edit Course"
+                      : "Course Details"}
+                </h2>
+
                 <p>
-                  {popupMode === "edit"
-                    ? "Update course information."
-                    : "Single course information from get course by ID API."}
+                  {popupMode === "create"
+                    ? "Add a course that classrooms can be created under."
+                    : popupMode === "edit"
+                      ? "Update course information."
+                      : "Single course information from get course by ID API."}
                 </p>
               </div>
 
@@ -235,6 +372,9 @@ export default function TeacherCourses() {
             </div>
 
             {popupLoading && <div className="popup-loading">Loading...</div>}
+
+            {!popupLoading && popupMode === "create" &&
+              renderCourseForm(submitCreate, "Create course")}
 
             {!popupLoading && popupMode === "details" && selectedCourse && (
               <div className="drawer-body">
@@ -280,84 +420,8 @@ export default function TeacherCourses() {
               </div>
             )}
 
-            {!popupLoading && popupMode === "edit" && selectedCourse && (
-              <form className="drawer-form" onSubmit={submitEdit}>
-                <div className="drawer-body">
-                  {formError && <div className="form-error">{formError}</div>}
-
-                  <label>
-                    Title
-                    <input
-                      name="title"
-                      value={form.title}
-                      onChange={updateForm}
-                      placeholder="Python Programming"
-                    />
-                  </label>
-
-                  <label>
-                    Description
-                    <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={updateForm}
-                      rows="5"
-                      placeholder="Learn Python from basic to advanced"
-                    />
-                  </label>
-
-                  <div className="two-column compact">
-                    <label>
-                      Category
-                      <select name="category" value={form.category} onChange={updateForm}>
-                        <option value="">Select category</option>
-
-                        {COURSE_CATEGORY_OPTIONS.map((category) => (
-                          <option key={category.value} value={category.value}>
-                            {category.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      Level
-                      <select name="level" value={form.level} onChange={updateForm}>
-                        <option value="">Select level</option>
-
-                        {COURSE_LEVEL_OPTIONS.map((level) => (
-                          <option key={level.value} value={level.value}>
-                            {level.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <label>
-                    Duration weeks
-                    <input
-                      type="number"
-                      min="1"
-                      name="duration_weeks"
-                      value={form.duration_weeks}
-                      onChange={updateForm}
-                      placeholder="8"
-                    />
-                  </label>
-                </div>
-
-                <div className="drawer-footer">
-                  <button className="btn btn-ghost" type="button" onClick={closePopup}>
-                    Cancel
-                  </button>
-
-                  <button className="btn btn-primary" type="submit" disabled={saving}>
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </form>
-            )}
+            {!popupLoading && popupMode === "edit" && selectedCourse &&
+              renderCourseForm(submitEdit, "Save")}
           </aside>
         </div>
       )}

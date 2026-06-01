@@ -16,6 +16,10 @@ function getErrorMessage(error) {
     error?.response?.data?.detail ||
     error?.response?.data?.message ||
     error?.response?.data?.error ||
+    error?.response?.data?.title?.[0] ||
+    error?.response?.data?.description?.[0] ||
+    error?.response?.data?.classroom?.[0] ||
+    error?.response?.data?.uploaded_images?.[0] ||
     "Something went wrong."
   );
 }
@@ -29,16 +33,6 @@ function getClassroomLabel(classroom) {
     classroom?.course_name ||
     `Classroom ${classroom?.id || ""}`
   );
-}
-
-function formatDate(value) {
-  if (!value) return "-";
-
-  return new Date(value).toLocaleDateString(undefined, {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
 }
 
 function formatDateTime(value) {
@@ -55,30 +49,31 @@ function formatDateTime(value) {
 
 function getAssignmentTitle(assignment) {
   return (
+    assignment.title ||
     assignment.course_name ||
     assignment.course?.title ||
     assignment.course?.name ||
     assignment.classroom?.course_name ||
-    "Course Assignment"
+    "Study Material"
   );
 }
-function getAssignmentClassroomId(assignment) {
-  if (typeof assignment.classroom === "object") {
-    return assignment.classroom?.id;
-  }
 
-  return assignment.classroom || assignment.classroom_id || assignment.batch;
+function getAssignmentDescription(assignment) {
+  return assignment.description || "";
 }
 
-function getAssignmentImages(assignment) {
-  const images =
+function getAssignmentFiles(assignment) {
+  const files =
     assignment.images ||
     assignment.uploaded_images ||
     assignment.files ||
     assignment.attachments ||
     [];
 
-  return Array.isArray(images) ? images : [];
+  if (Array.isArray(files)) return files;
+  if (typeof files === "string") return [files];
+
+  return [];
 }
 
 function getFileUrl(file) {
@@ -89,13 +84,46 @@ function getFileUrl(file) {
   return file.file_url || file.file || file.url || file.image || "";
 }
 
+function getFileName(file, index) {
+  if (!file) return `File ${index + 1}`;
+
+  if (typeof file === "string") {
+    return file.split("/").pop() || `File ${index + 1}`;
+  }
+
+  const url = getFileUrl(file);
+
+  return (
+    file.original_name ||
+    file.name ||
+    file.filename ||
+    url.split("/").pop() ||
+    `File ${index + 1}`
+  );
+}
+
+function isImageFile(file) {
+  if (!file) return false;
+
+  if (typeof file === "object") {
+    const type = file.mime_type || file.content_type || file.type || "";
+
+    if (type.startsWith("image/")) return true;
+  }
+
+  const url = getFileUrl(file).toLowerCase();
+
+  return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+}
+
 function getFirstFileUrl(assignment) {
-  const images = getAssignmentImages(assignment);
+  const files = getAssignmentFiles(assignment);
+
   return (
     assignment.file_url ||
     assignment.file ||
     assignment.image_url ||
-    getFileUrl(images[0])
+    getFileUrl(files[0])
   );
 }
 
@@ -107,6 +135,8 @@ export default function TeacherAssignments() {
 
   const [classroomId, setClassroomId] = useState("");
   const [createClassroomId, setCreateClassroomId] = useState("");
+  const [createTitle, setCreateTitle] = useState("");
+  const [createDescription, setCreateDescription] = useState("");
   const [files, setFiles] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -170,7 +200,8 @@ export default function TeacherAssignments() {
       return getClassroomLabel(classroomValue);
     }
 
-    const classroom = classroomMap[String(classroomValue || assignment.classroom_id)];
+    const classroom =
+      classroomMap[String(classroomValue || assignment.classroom_id)];
 
     return classroom ? getClassroomLabel(classroom) : classroomValue || "-";
   }
@@ -183,6 +214,7 @@ export default function TeacherAssignments() {
     return assignments.filter((assignment) => {
       const text = [
         getAssignmentTitle(assignment),
+        getAssignmentDescription(assignment),
         getAssignmentClassroomName(assignment),
         assignment.id,
         assignment.upload_at,
@@ -196,7 +228,10 @@ export default function TeacherAssignments() {
 
   const stats = useMemo(() => {
     const totalFiles = assignments.reduce((total, assignment) => {
-      return total + getAssignmentImages(assignment).length;
+      const files = getAssignmentFiles(assignment);
+      const firstFileUrl = getFirstFileUrl(assignment);
+
+      return total + (files.length || (firstFileUrl ? 1 : 0));
     }, 0);
 
     return {
@@ -205,6 +240,18 @@ export default function TeacherAssignments() {
       totalFiles,
     };
   }, [assignments]);
+
+  function resetCreateForm() {
+    setCreateTitle("");
+    setCreateDescription("");
+    setFiles([]);
+    setError("");
+  }
+
+  function closeCreateDrawer() {
+    setShowCreate(false);
+    resetCreateForm();
+  }
 
   async function handleClassroomChange(event) {
     const nextClassroomId = event.target.value;
@@ -230,16 +277,28 @@ export default function TeacherAssignments() {
       return;
     }
 
+    if (!createTitle.trim()) {
+      setError("Please enter a title.");
+      return;
+    }
+
+    if (!createDescription.trim()) {
+      setError("Please enter a description.");
+      return;
+    }
+
     if (!files.length) {
-      setError("Please upload at least one photo.");
+      setError("Please upload at least one file.");
       return;
     }
 
     const formData = new FormData();
 
     formData.append("classroom", createClassroomId);
+    formData.append("title", createTitle.trim());
+    formData.append("description", createDescription.trim());
 
-    Array.from(files).forEach((file) => {
+    files.forEach((file) => {
       formData.append("uploaded_images", file);
     });
 
@@ -249,7 +308,7 @@ export default function TeacherAssignments() {
 
       await assignmentApi.create(formData);
 
-      setFiles([]);
+      resetCreateForm();
       setShowCreate(false);
 
       await loadAssignments(classroomId);
@@ -261,7 +320,7 @@ export default function TeacherAssignments() {
   }
 
   async function handleDelete(assignmentId) {
-    const confirmed = window.confirm("Delete this assignment?");
+    const confirmed = window.confirm("Delete this study material?");
 
     if (!confirmed) return;
 
@@ -277,8 +336,8 @@ export default function TeacherAssignments() {
   return (
     <section className="page-stack teacher-lms-page">
       <PageHeader
-        title="Assignments"
-        description="Create and manage assignment photos for your classrooms and batches."
+        title="Study Materials"
+        description="Create and manage study materials for your classrooms and batches."
         actions={
           <button
             className="btn btn-primary"
@@ -288,7 +347,7 @@ export default function TeacherAssignments() {
               setShowCreate(true);
             }}
           >
-            + Create assignment
+            + Create material
           </button>
         }
       />
@@ -296,7 +355,7 @@ export default function TeacherAssignments() {
       <div className="lms-stats lms-stats-3">
         <article className="lms-stat-card">
           <strong>{stats.totalAssignments}</strong>
-          <span>Total Assignments</span>
+          <span>Total Materials</span>
         </article>
 
         <article className="lms-stat-card tone-success">
@@ -306,7 +365,7 @@ export default function TeacherAssignments() {
 
         <article className="lms-stat-card tone-warning">
           <strong>{stats.totalFiles}</strong>
-          <span>Uploaded Photos</span>
+          <span>Uploaded Files</span>
         </article>
       </div>
 
@@ -316,7 +375,7 @@ export default function TeacherAssignments() {
           <input
             className="lms-search"
             type="search"
-            placeholder="Search assignments..."
+            placeholder="Search study materials..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
@@ -343,17 +402,22 @@ export default function TeacherAssignments() {
       {error && !showCreate && <div className="form-error">{error}</div>}
 
       {loading ? (
-        <Loader label="Loading assignments" />
+        <Loader label="Loading study materials" />
       ) : filteredAssignments.length === 0 ? (
         <EmptyState
-          title="No assignments found"
-          message="Create an assignment by selecting a classroom and uploading photos."
+          title="No study materials found"
+          message="Create a study material by selecting a classroom and uploading files."
         />
       ) : (
         <div className="assignment-list">
           {filteredAssignments.map((assignment) => {
-            const images = getAssignmentImages(assignment);
+            const assignmentFiles = getAssignmentFiles(assignment);
             const firstFileUrl = getFirstFileUrl(assignment);
+            const displayFiles = assignmentFiles.length
+              ? assignmentFiles
+              : firstFileUrl
+                ? [assignment]
+                : [];
 
             return (
               <article key={assignment.id} className="assignment-card">
@@ -367,12 +431,20 @@ export default function TeacherAssignments() {
 
                 <h3>{getAssignmentTitle(assignment)}</h3>
 
-                
+                {getAssignmentDescription(assignment) && (
+                  <p className="assignment-description">
+                    {getAssignmentDescription(assignment)}
+                  </p>
+                )}
 
-                {images.length > 0 && (
+                {displayFiles.length > 0 && (
                   <div className="assignment-photo-grid">
-                    {images.slice(0, 4).map((file, index) => {
+                    {displayFiles.slice(0, 4).map((file, index) => {
                       const fileUrl = getFileUrl(file);
+                      const fileName = getFileName(file, index);
+                      const imageFile = isImageFile(file);
+
+                      if (!fileUrl) return null;
 
                       return (
                         <a
@@ -380,13 +452,24 @@ export default function TeacherAssignments() {
                           href={fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="assignment-photo-link"
+                          className={
+                            imageFile
+                              ? "assignment-photo-link"
+                              : "assignment-file-link"
+                          }
                         >
-                          <img
-                            src={fileUrl}
-                            alt={`Assignment upload ${index + 1}`}
-                            loading="lazy"
-                          />
+                          {imageFile ? (
+                            <img
+                              src={fileUrl}
+                              alt={`Study material upload ${index + 1}`}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <>
+                              <span className="assignment-file-icon">📄</span>
+                              <strong>{fileName}</strong>
+                            </>
+                          )}
                         </a>
                       );
                     })}
@@ -394,18 +477,16 @@ export default function TeacherAssignments() {
                 )}
 
                 <div className="assignment-meta-grid assignment-meta-grid-3">
-                 
-
-
-
                   <span>
                     <small>Uploaded At</small>
                     <strong>{formatDateTime(assignment.upload_at)}</strong>
                   </span>
 
                   <span>
-                    <small>Photos</small>
-                    <strong>{images.length || (firstFileUrl ? 1 : 0)}</strong>
+                    <small>Files</small>
+                    <strong>
+                      {assignmentFiles.length || (firstFileUrl ? 1 : 0)}
+                    </strong>
                   </span>
 
                   <span>
@@ -436,7 +517,7 @@ export default function TeacherAssignments() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open Photo
+                      Open File
                     </a>
                   )}
 
@@ -460,7 +541,7 @@ export default function TeacherAssignments() {
             className="drawer-backdrop"
             type="button"
             aria-label="Close"
-            onClick={() => setShowCreate(false)}
+            onClick={closeCreateDrawer}
           />
 
           <form className="drawer-panel drawer-form" onSubmit={handleCreate}>
@@ -468,14 +549,14 @@ export default function TeacherAssignments() {
 
             <div className="drawer-header">
               <div>
-                <h2>Create assignment</h2>
-                <p>Select a classroom and upload assignment photos.</p>
+                <h2>Create study material</h2>
+                <p>Select a classroom, add title, description, and upload files.</p>
               </div>
 
               <button
                 className="drawer-close"
                 type="button"
-                onClick={() => setShowCreate(false)}
+                onClick={closeCreateDrawer}
               >
                 ×
               </button>
@@ -502,21 +583,41 @@ export default function TeacherAssignments() {
               </label>
 
               <label>
-                Upload photo
+                Title
+                <input
+                  type="text"
+                  placeholder="Enter title"
+                  value={createTitle}
+                  onChange={(event) => setCreateTitle(event.target.value)}
+                />
+              </label>
+
+              <label>
+                Description
+                <textarea
+                  placeholder="Enter description"
+                  value={createDescription}
+                  onChange={(event) => setCreateDescription(event.target.value)}
+                  rows={4}
+                />
+              </label>
+
+              <label>
+                Upload files
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.pdf,.doc,.docx,.ppt,.pptx"
                   multiple
-                  onChange={(event) => setFiles(event.target.files)}
+                  onChange={(event) =>
+                    setFiles(Array.from(event.target.files || []))
+                  }
                 />
               </label>
 
               {files.length > 0 && (
                 <div className="selected-file-box">
                   <strong>{files.length}</strong>
-                  <span>
-                    {files.length === 1 ? "photo selected" : "photos selected"}
-                  </span>
+                  <span>{files.length === 1 ? "file selected" : "files selected"}</span>
                 </div>
               )}
 
@@ -527,7 +628,7 @@ export default function TeacherAssignments() {
               <button
                 className="btn btn-secondary"
                 type="button"
-                onClick={() => setShowCreate(false)}
+                onClick={closeCreateDrawer}
               >
                 Cancel
               </button>
@@ -537,7 +638,7 @@ export default function TeacherAssignments() {
                 type="submit"
                 disabled={creating || !classrooms.length}
               >
-                {creating ? "Creating..." : "Create assignment"}
+                {creating ? "Creating..." : "Create material"}
               </button>
             </div>
           </form>
