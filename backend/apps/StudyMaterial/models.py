@@ -25,14 +25,18 @@ class StudyMaterial(models.Model):
         on_delete=models.CASCADE,
         related_name="study_material",
     )
-
+    
     upload_by = models.ForeignKey(
         "users.User",
         on_delete=models.SET_NULL,
         null=True,
         related_name="study_material",
     )
-
+    title=models.CharField(
+        max_length=40
+    )
+    description = models.TextField()
+    
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         indexes = [

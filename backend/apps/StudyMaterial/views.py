@@ -8,7 +8,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from .serializer import StudyMaterialserializer, SubmissionSerializers
 from .models import StudyMaterial, Submission
 from .tasks import compress_uploaded_file
-
+from rest_framework.permissions import IsAuthenticated
 from apps.users.permissions import IsTeacherCourseOwner, IsStudent
 
 
@@ -103,7 +103,7 @@ class StudentSubmissionView(viewsets.ModelViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializers
     parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [IsStudent]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):

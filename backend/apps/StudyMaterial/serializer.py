@@ -49,7 +49,7 @@ class StudyMaterialserializer(serializers.ModelSerializer):
         read_only=True,
     )
     course_name=serializers.CharField(
-        source="classroom.course.title"
+        source="classroom.course.title",read_only=True,
     )
     uploaded_images = serializers.ListField(
         child=serializers.FileField(),
@@ -66,6 +66,8 @@ class StudyMaterialserializer(serializers.ModelSerializer):
             "classroom_name",
             "course_name",
             "upload_by",
+            "title",
+            "description",
             "upload_at",
             "images",
             "uploaded_images",
