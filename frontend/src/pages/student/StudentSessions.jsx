@@ -20,6 +20,7 @@ export default function StudentSessions() {
   const [sessions, setSessions] = useState([]);
   const [filter, setFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
+
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -50,9 +51,14 @@ export default function StudentSessions() {
   }, [showToast]);
 
   const filteredSessions = useMemo(() => {
-    if (filter === "ALL") return sessions;
+    const rows = sessions.map((session) => ({
+      ...session,
+      status: String(session.status || "UPCOMING").toUpperCase(),
+    }));
 
-    return sessions.filter((session) => session.status === filter);
+    if (filter === "ALL") return rows;
+
+    return rows.filter((session) => session.status === filter);
   }, [sessions, filter]);
 
   const joinSession = async (session) => {
@@ -68,13 +74,13 @@ export default function StudentSessions() {
   if (loading) return <Loader label="Loading live classes" />;
 
   return (
-    <div className="page-stack">
+    <section className="page-stack student-page student-sessions-page">
       <PageHeader
         title="Live Classes"
         description="Join live sessions from your enrolled classrooms."
       />
 
-      <div className="filter-tabs">
+      <div className="student-filter-row">
         {filters.map((item) => (
           <button
             key={item}
@@ -88,7 +94,7 @@ export default function StudentSessions() {
       </div>
 
       {filteredSessions.length ? (
-        <div className="card-grid">
+        <div className="student-card-grid">
           {filteredSessions.map((session) => (
             <SessionCard
               key={session.id}
@@ -99,8 +105,11 @@ export default function StudentSessions() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No live classes scheduled" />
+        <EmptyState
+          title="No live classes scheduled"
+          message="Live classes from your enrolled classrooms will appear here."
+        />
       )}
-    </div>
+    </section>
   );
 }

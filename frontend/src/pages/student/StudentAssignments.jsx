@@ -224,7 +224,7 @@ export default function StudentAssignments() {
   }
 
   return (
-    <section className="page-section">
+    <section className="page-stack student-page student-assignments-page">
       <PageHeader
         eyebrow="Assignments"
         title="My classroom assignments"

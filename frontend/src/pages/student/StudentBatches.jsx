@@ -35,7 +35,7 @@ export default function StudentBatches() {
   if (loading) return <Loader label="Loading classrooms" />;
 
   return (
-    <div className="page-stack">
+    <div className="page-stack student-page student-batches-page">
       <PageHeader
         title="My Classrooms"
         description="Classrooms you have joined using an enrollment code."

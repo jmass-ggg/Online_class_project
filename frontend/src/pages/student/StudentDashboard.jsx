@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageHeader from "../../components/PageHeader.jsx";
 import StatCard from "../../components/StatCard.jsx";
 import Loader from "../../components/Loader.jsx";
@@ -19,6 +19,7 @@ import {
 export default function StudentDashboard() {
   const [data, setData] = useState({ batches: [], sessions: [] });
   const [loading, setLoading] = useState(true);
+
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -51,6 +52,19 @@ export default function StudentDashboard() {
     load();
   }, [showToast]);
 
+  const grouped = useMemo(() => {
+    const rows = data.sessions.map((session) => ({
+      ...session,
+      status: String(session.status || "UPCOMING").toUpperCase(),
+    }));
+
+    return {
+      live: rows.filter((session) => session.status === "LIVE"),
+      upcoming: rows.filter((session) => session.status === "UPCOMING"),
+      completed: rows.filter((session) => session.status === "COMPLETED"),
+    };
+  }, [data.sessions]);
+
   const joinSession = async (session) => {
     try {
       const response = await classSessionApi.joinSession(session.id);
@@ -63,63 +77,57 @@ export default function StudentDashboard() {
 
   if (loading) return <Loader label="Loading student dashboard" />;
 
-  const liveSessions = data.sessions.filter(
-    (session) => session.status === "LIVE"
-  );
-
-  const upcomingSessions = data.sessions.filter(
-    (session) => session.status === "UPCOMING"
-  );
-
-  const completedSessions = data.sessions.filter(
-    (session) => session.status === "COMPLETED"
-  );
-
   return (
-    <div className="page-stack">
+    <section className="page-stack student-page student-dashboard-page">
       <PageHeader
         eyebrow="Student dashboard"
         title="Welcome back to class"
         description="Join classrooms with a code, watch for live classes, and review your courses."
         actions={
           <Link className="btn btn-primary" to="/student/join-classroom">
-            Join classroom with code
+            + Join classroom with code
           </Link>
         }
       />
 
-      <section className="stats-grid">
+      <section className="student-dashboard-stats">
         <StatCard
           label="Joined classrooms"
           value={data.batches.length}
           helper="Classrooms you joined"
         />
+
         <StatCard
           label="Upcoming live classes"
-          value={upcomingSessions.length}
+          value={grouped.upcoming.length}
+          helper="Ready to join soon"
           tone="warning"
         />
+
         <StatCard
           label="Live now"
-          value={liveSessions.length}
+          value={grouped.live.length}
+          helper="Sessions currently running"
           tone="success"
         />
+
         <StatCard
           label="Completed classes"
-          value={completedSessions.length}
+          value={grouped.completed.length}
+          helper="Classes you can review"
           tone="muted"
         />
       </section>
 
-      <section className="section-card live-highlight">
-        <div className="section-heading">
+      <section className="student-panel student-live-panel">
+        <div className="student-section-heading">
           <h3>Live classes</h3>
           <Link to="/student/sessions">View all</Link>
         </div>
 
-        {liveSessions.length ? (
-          <div className="card-grid compact-grid">
-            {liveSessions.map((session) => (
+        {grouped.live.length ? (
+          <div className="student-card-grid">
+            {grouped.live.map((session) => (
               <SessionCard
                 key={session.id}
                 session={session}
@@ -129,18 +137,21 @@ export default function StudentDashboard() {
             ))}
           </div>
         ) : (
-          <EmptyState title="No class is live right now" />
+          <EmptyState
+            title="No class is live right now"
+            message="You can join a session once your teacher starts it."
+          />
         )}
       </section>
 
-      <section className="section-card">
-        <div className="section-heading">
+      <section className="student-panel">
+        <div className="student-section-heading">
           <h3>Recent classrooms</h3>
           <Link to="/student/batches">View classrooms</Link>
         </div>
 
         {data.batches.length ? (
-          <div className="card-grid compact-grid">
+          <div className="student-card-grid">
             {data.batches.slice(0, 3).map((batch) => (
               <BatchCard key={batch.id} batch={batch} role="student" />
             ))}
@@ -148,6 +159,7 @@ export default function StudentDashboard() {
         ) : (
           <EmptyState
             title="You have not joined any classroom yet"
+            message="Join your first classroom using the code shared by your teacher."
             action={
               <Link className="btn btn-primary" to="/student/join-classroom">
                 Join Classroom
@@ -156,6 +168,6 @@ export default function StudentDashboard() {
           />
         )}
       </section>
-    </div>
+    </section>
   );
 }

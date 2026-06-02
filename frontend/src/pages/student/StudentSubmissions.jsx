@@ -4,6 +4,7 @@ import { submissionApi } from "../../api/submissionApi";
 import PageHeader from "../../components/PageHeader";
 import Loader from "../../components/Loader";
 import EmptyState from "../../components/EmptyState";
+import StatusBadge from "../../components/StatusBadge";
 
 function getResults(data) {
   return Array.isArray(data) ? data : data?.results || [];
@@ -11,7 +12,14 @@ function getResults(data) {
 
 function formatDate(value) {
   if (!value) return "-";
-  return new Date(value).toLocaleString();
+
+  return new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function getErrorMessage(error) {
@@ -31,6 +39,30 @@ function getClassroomLabel(classroom) {
     classroom?.course_name ||
     `Classroom ${classroom?.id || ""}`
   );
+}
+
+function getAssignmentTitle(submission) {
+  const assignment = submission.assignment;
+
+  if (typeof assignment === "object") {
+    return assignment.title || assignment.name || `Assignment #${assignment.id}`;
+  }
+
+  return submission.assignment_title || assignment || "-";
+}
+
+function getSubmissionStatus(submission) {
+  const raw =
+    submission.status ||
+    submission.review_status ||
+    submission.compression_status ||
+    submission.submission_status;
+
+  return raw ? String(raw).toUpperCase() : "SUBMITTED";
+}
+
+function getSubmissionFile(submission) {
+  return submission.submitted_file_url || submission.submitted_file || "";
 }
 
 export default function StudentSubmissions() {
@@ -101,14 +133,14 @@ export default function StudentSubmissions() {
   }
 
   return (
-    <section className="page-section">
+    <section className="page-stack student-page student-submissions-page">
       <PageHeader
         eyebrow="Submissions"
         title="My submissions"
         description="Check your submitted assignment files by classroom or batch."
       />
 
-      <div className="form-card form">
+      <div className="student-toolbar">
         <label>
           Classroom / Batch
           <select value={classroomId} onChange={handleFilterChange}>
@@ -120,9 +152,9 @@ export default function StudentSubmissions() {
             ))}
           </select>
         </label>
-
-        {error && <div className="form-error">{error}</div>}
       </div>
+
+      {error && <div className="form-error">{error}</div>}
 
       {loading ? (
         <Loader label="Loading submissions" />
@@ -132,9 +164,9 @@ export default function StudentSubmissions() {
           message="You have not submitted any assignment for this classroom yet."
         />
       ) : (
-        <div className="table-card">
-          <div className="table-scroll">
-            <table>
+        <div className="student-table-card">
+          <div className="student-table-scroll">
+            <table className="student-table">
               <thead>
                 <tr>
                   <th>Classroom</th>
@@ -144,32 +176,36 @@ export default function StudentSubmissions() {
                   <th>File</th>
                 </tr>
               </thead>
+
               <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{selectedClassroomName}</td>
-                    <td>{submission.assignment}</td>
-                    <td>{formatDate(submission.submitted_at)}</td>
-                    <td>{submission.compression_status || "-"}</td>
-                    <td>
-                      {submission.submitted_file_url || submission.submitted_file ? (
-                        <a
-                          href={
-                            submission.submitted_file_url ||
-                            submission.submitted_file
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-secondary"
-                        >
-                          Open file
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {submissions.map((submission) => {
+                  const fileUrl = getSubmissionFile(submission);
+
+                  return (
+                    <tr key={submission.id}>
+                      <td>{selectedClassroomName}</td>
+                      <td>{getAssignmentTitle(submission)}</td>
+                      <td>{formatDate(submission.submitted_at)}</td>
+                      <td>
+                        <StatusBadge status={getSubmissionStatus(submission)} />
+                      </td>
+                      <td>
+                        {fileUrl ? (
+                          <a
+                            href={fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn btn-secondary"
+                          >
+                            Open file
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

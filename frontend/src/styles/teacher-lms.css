@@ -1879,3 +1879,690 @@ td {
     width: 100% !important;
   }
 }
+/* =========================
+   STUDENT UI POLISH
+   Add at bottom of teacher-lms.css
+========================= */
+
+.student-page,
+.student-dashboard-page,
+.student-join-page,
+.student-batches-page,
+.student-sessions-page,
+.student-assignments-page,
+.student-submissions-page {
+  width: 100% !important;
+  max-width: 980px !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  gap: 22px !important;
+}
+
+/* Student page header */
+.student-page .page-header,
+.student-dashboard-page .page-header,
+.student-join-page .page-header,
+.student-batches-page .page-header {
+  min-height: 116px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  padding: 26px 30px !important;
+  border: 1px solid #e6e6e9 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+.student-page .page-header h2,
+.student-dashboard-page .page-header h2,
+.student-join-page .page-header h2 {
+  margin: 0 0 8px !important;
+  color: #111111 !important;
+  font-size: 1.45rem !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.student-page .page-header p,
+.student-dashboard-page .page-header p,
+.student-join-page .page-header p {
+  max-width: 540px !important;
+  margin: 0 !important;
+  color: #6f6f76 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.55 !important;
+}
+
+/* Join classroom */
+.student-join-page {
+  max-width: 680px !important;
+}
+
+.student-join-card,
+.student-recent-panel {
+  border: 1px solid #e6e6e9 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+.student-join-card {
+  display: grid;
+  gap: 16px;
+  padding: 28px !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(254, 226, 226, 0.6), transparent 30%),
+    #ffffff !important;
+}
+
+.student-join-card label {
+  display: grid;
+  gap: 10px;
+  color: #111111;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.student-code-input {
+  width: 100%;
+  min-height: 56px !important;
+  border: 1px solid #e0e0e4 !important;
+  border-radius: 10px !important;
+  background: #fafafa !important;
+  color: #111111 !important;
+  padding: 0 18px !important;
+  font-size: 0.92rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.34em !important;
+  text-align: center;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.student-code-input::placeholder {
+  color: #8a8a91;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+}
+
+.student-code-input:focus {
+  border-color: #111111 !important;
+  background: #ffffff !important;
+}
+
+.student-code-help {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 0;
+  color: #6f6f76;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.student-join-card .btn-block {
+  width: 100%;
+  min-height: 42px !important;
+  border-radius: 8px !important;
+}
+
+/* Recently joined */
+.student-recent-panel {
+  min-height: 240px;
+  display: grid;
+  gap: 18px;
+  padding: 28px !important;
+}
+
+.student-recent-panel h3 {
+  margin: 0;
+  color: #111111;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.student-recent-classrooms {
+  display: grid;
+  gap: 12px;
+}
+
+.student-recent-classroom-card {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #ededf0;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.student-recent-classroom-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6f6f76;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.student-recent-classroom-card strong {
+  color: #111111;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.student-recent-classroom-card em {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #f1f1f2;
+  color: #111111;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+/* Student dashboard style support */
+.student-dashboard-stats,
+.student-page .stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.student-dashboard-page .stat-card,
+.student-page .stat-card {
+  min-height: 96px !important;
+  padding: 18px !important;
+  border: 1px solid #e6e6e9 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+.student-dashboard-page .section-card,
+.student-page .section-card {
+  border: 1px solid #e6e6e9 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+.student-dashboard-page .section-heading,
+.student-page .section-heading {
+  margin-bottom: 16px !important;
+}
+
+.student-dashboard-page .section-heading h3,
+.student-page .section-heading h3 {
+  font-size: 0.95rem !important;
+  font-weight: 950 !important;
+}
+
+.student-dashboard-page .section-heading a,
+.student-page .section-heading a {
+  color: #6f6f76 !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+}
+
+/* Student assignment table polish */
+.student-assignments-page .form-card,
+.student-page .form-card {
+  border: 1px solid #e6e6e9 !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+.student-assignments-page .table-card,
+.student-page .table-card {
+  border-radius: 18px !important;
+  border: 1px solid #e6e6e9 !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .student-dashboard-stats,
+  .student-page .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 740px) {
+  .student-page,
+  .student-dashboard-page,
+  .student-join-page,
+  .student-batches-page,
+  .student-sessions-page,
+  .student-assignments-page,
+  .student-submissions-page {
+    max-width: 100% !important;
+  }
+
+  .student-page .page-header,
+  .student-dashboard-page .page-header,
+  .student-join-page .page-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    padding: 22px !important;
+  }
+
+  .student-dashboard-stats,
+  .student-page .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-join-card,
+  .student-recent-panel {
+    padding: 22px !important;
+  }
+}
+/* =========================
+   FINAL STUDENT UI OVERRIDE
+   Keep this at the very bottom
+========================= */
+
+.student-page,
+.student-dashboard-page,
+.student-batches-page,
+.student-sessions-page,
+.student-assignments-page,
+.student-submissions-page {
+  width: 100% !important;
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  gap: 26px !important;
+}
+
+/* Header */
+.student-page .page-header,
+.student-dashboard-page .page-header,
+.student-batches-page .page-header,
+.student-sessions-page .page-header,
+.student-assignments-page .page-header,
+.student-submissions-page .page-header {
+  min-height: 142px !important;
+  padding: 34px 38px !important;
+  border-radius: 22px !important;
+  border: 1px solid #e8e8eb !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.student-page .page-header h2,
+.student-dashboard-page .page-header h2,
+.student-batches-page .page-header h2,
+.student-sessions-page .page-header h2,
+.student-assignments-page .page-header h2,
+.student-submissions-page .page-header h2 {
+  margin: 0 0 10px !important;
+  font-size: 1.75rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.student-page .page-header p,
+.student-dashboard-page .page-header p,
+.student-batches-page .page-header p,
+.student-sessions-page .page-header p,
+.student-assignments-page .page-header p,
+.student-submissions-page .page-header p {
+  max-width: 680px !important;
+  color: #6f6f76 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Buttons */
+.student-page .btn,
+.student-dashboard-page .btn,
+.student-batches-page .btn,
+.student-sessions-page .btn,
+.student-assignments-page .btn,
+.student-submissions-page .btn {
+  min-height: 38px !important;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+}
+
+.student-page .btn-primary,
+.student-dashboard-page .btn-primary,
+.student-batches-page .btn-primary,
+.student-sessions-page .btn-primary,
+.student-assignments-page .btn-primary,
+.student-submissions-page .btn-primary {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+.student-page .btn-secondary,
+.student-dashboard-page .btn-secondary,
+.student-batches-page .btn-secondary,
+.student-sessions-page .btn-secondary,
+.student-assignments-page .btn-secondary,
+.student-submissions-page .btn-secondary {
+  border: 1px solid #dedee2 !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+/* Dashboard stats */
+.student-dashboard-stats,
+.student-page .stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.student-dashboard-page .stat-card,
+.student-page .stat-card {
+  min-height: 124px !important;
+  padding: 22px !important;
+  border-radius: 17px !important;
+  border: 1px solid #e8e8eb !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.035) !important;
+}
+
+.student-dashboard-page .stat-card strong,
+.student-page .stat-card strong {
+  font-size: 1.8rem !important;
+}
+
+/* Panels */
+.student-panel,
+.student-dashboard-page .section-card,
+.student-page .section-card {
+  padding: 28px !important;
+  border-radius: 22px !important;
+  border: 1px solid #e8e8eb !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.045),
+    0 1px 2px rgba(0, 0, 0, 0.035) !important;
+}
+
+.student-live-panel {
+  border-color: #f0d7e4 !important;
+  background: #fffcff !important;
+}
+
+.student-section-heading,
+.student-page .section-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin: 0 0 18px !important;
+}
+
+.student-section-heading h3,
+.student-page .section-heading h3 {
+  margin: 0 !important;
+  color: #111111 !important;
+  font-size: 1rem !important;
+  font-weight: 950 !important;
+}
+
+.student-section-heading a,
+.student-page .section-heading a {
+  color: #111111 !important;
+  font-size: 0.82rem !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+/* Student card grids */
+.student-card-grid,
+.student-page .card-grid,
+.student-batches-page .card-grid,
+.student-sessions-page .card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+.student-page .card,
+.student-batches-page .card,
+.student-sessions-page .card,
+.student-page .session-card,
+.student-sessions-page .session-card {
+  min-height: 238px !important;
+  padding: 24px !important;
+  border-radius: 18px !important;
+  border: 1px solid #e8e8eb !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.035) !important;
+}
+
+.student-page .card h3,
+.student-batches-page .card h3,
+.student-sessions-page .card h3,
+.student-page .session-card h3,
+.student-sessions-page .session-card h3 {
+  font-size: 1.05rem !important;
+  line-height: 1.35 !important;
+}
+
+/* Student filter buttons */
+.student-filter-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.student-filter-row button {
+  min-height: 36px !important;
+  padding: 0 17px !important;
+  border: 1px solid #e5e5e7 !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+  font-size: 0.74rem !important;
+  font-weight: 900 !important;
+}
+
+.student-filter-row button.active {
+  border-color: #111111 !important;
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+/* Toolbar */
+.student-toolbar,
+.student-assignments-page .form-card,
+.student-submissions-page .form-card {
+  padding: 22px !important;
+  border: 1px solid #e8e8eb !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04) !important;
+}
+
+.student-toolbar label,
+.student-assignments-page .form-card label,
+.student-submissions-page .form-card label {
+  display: grid !important;
+  gap: 8px !important;
+  color: #111111 !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+}
+
+.student-toolbar select,
+.student-assignments-page .form-card select,
+.student-submissions-page .form-card select {
+  width: 100% !important;
+  max-width: 420px !important;
+  min-height: 42px !important;
+  border: 1px solid #e5e5e7 !important;
+  border-radius: 999px !important;
+  background: #fafafa !important;
+  padding: 0 16px !important;
+  color: #111111 !important;
+}
+
+/* Tables */
+.student-table-card,
+.student-assignments-page .table-card,
+.student-submissions-page .table-card {
+  width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 20px !important;
+  border: 1px solid #e8e8eb !important;
+  background: #ffffff !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.045),
+    0 1px 2px rgba(0, 0, 0, 0.035) !important;
+}
+
+.student-table-scroll,
+.student-assignments-page .table-scroll,
+.student-submissions-page .table-scroll {
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+.student-table,
+.student-assignments-page table,
+.student-submissions-page table {
+  width: 100% !important;
+  min-width: 1040px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.student-table th,
+.student-table td,
+.student-assignments-page th,
+.student-assignments-page td,
+.student-submissions-page th,
+.student-submissions-page td {
+  padding: 17px 20px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #ededf0 !important;
+}
+
+.student-table th,
+.student-assignments-page th,
+.student-submissions-page th {
+  background: #fafafa !important;
+  color: #6f6f76 !important;
+  font-size: 0.66rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.student-table td,
+.student-assignments-page td,
+.student-submissions-page td {
+  color: #111111 !important;
+  font-size: 0.82rem !important;
+  font-weight: 760 !important;
+}
+
+/* Assignment table submit area */
+.student-assignments-page table .form {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.student-assignments-page table input[type="file"] {
+  max-width: 240px !important;
+  min-height: 38px !important;
+  font-size: 0.75rem !important;
+}
+
+.student-assignments-page table .btn {
+  min-width: 96px !important;
+}
+
+/* Empty state */
+.student-page .empty-state,
+.student-dashboard-page .empty-state,
+.student-batches-page .empty-state,
+.student-sessions-page .empty-state,
+.student-assignments-page .empty-state,
+.student-submissions-page .empty-state {
+  min-height: 210px !important;
+  border-radius: 18px !important;
+  border: 1px dashed #dedee2 !important;
+  background: #fafafa !important;
+}
+
+/* Responsive */
+@media (max-width: 1080px) {
+  .student-dashboard-stats,
+  .student-page .stats-grid,
+  .student-card-grid,
+  .student-page .card-grid,
+  .student-batches-page .card-grid,
+  .student-sessions-page .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 740px) {
+  .student-page,
+  .student-dashboard-page,
+  .student-batches-page,
+  .student-sessions-page,
+  .student-assignments-page,
+  .student-submissions-page {
+    max-width: 100% !important;
+  }
+
+  .student-page .page-header,
+  .student-dashboard-page .page-header,
+  .student-batches-page .page-header,
+  .student-sessions-page .page-header,
+  .student-assignments-page .page-header,
+  .student-submissions-page .page-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    padding: 24px !important;
+  }
+
+  .student-dashboard-stats,
+  .student-page .stats-grid,
+  .student-card-grid,
+  .student-page .card-grid,
+  .student-batches-page .card-grid,
+  .student-sessions-page .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-assignments-page table .form {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .student-assignments-page table input[type="file"],
+  .student-assignments-page table .btn {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
