@@ -10,22 +10,21 @@ import { useToast } from "../../context/ToastContext.jsx";
 import { parseApiError } from "../../utils/validators";
 import { saveLiveKitSession } from "../../utils/livekitHelpers";
 
-const filters = ["ALL", "UPCOMING", "LIVE", "COMPLETED", "CANCELLED"];
-
 export default function TeacherSessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("ALL");
   const [target, setTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const load = async () => {
     setLoading(true);
+
     try {
       const response = await classSessionApi.getSessions();
-      setSessions(response.data || []);
+      setSessions(Array.isArray(response.data) ? response.data : response.data?.results || []);
     } catch (err) {
       showToast(parseApiError(err), "error");
     } finally {
@@ -33,9 +32,24 @@ export default function TeacherSessions() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
-  const filteredSessions = useMemo(() => filter === "ALL" ? sessions : sessions.filter((session) => session.status === filter), [sessions, filter]);
+  const grouped = useMemo(() => {
+    const rows = sessions.map((session) => ({
+      ...session,
+      status: String(session.status || "UPCOMING").toUpperCase(),
+    }));
+
+    return {
+      live: rows.filter((session) => session.status === "LIVE"),
+      upcoming: rows.filter((session) => session.status === "UPCOMING"),
+      completed: rows.filter((session) => session.status === "COMPLETED"),
+      cancelled: rows.filter((session) => session.status === "CANCELLED"),
+      total: rows.length,
+    };
+  }, [sessions]);
 
   const startSession = async (session) => {
     try {
@@ -80,7 +94,9 @@ export default function TeacherSessions() {
 
   const confirmDelete = async () => {
     if (!target) return;
+
     setDeleting(true);
+
     try {
       await classSessionApi.deleteSession(target.id);
       showToast("Session deleted", "success");
@@ -96,11 +112,111 @@ export default function TeacherSessions() {
   if (loading) return <Loader label="Loading live classes" />;
 
   return (
-    <div className="page-stack">
-      <PageHeader title="Live Classes" description="Start, enter, complete, cancel, and review attendance for class sessions." actions={<Link className="btn btn-primary" to="/teacher/sessions/create">Create live class</Link>} />
-      <div className="filter-tabs">{filters.map((item) => <button key={item} className={filter === item ? "active" : ""} type="button" onClick={() => setFilter(item)}>{item}</button>)}</div>
-      {filteredSessions.length ? <div className="card-grid">{filteredSessions.map((session) => <SessionCard key={session.id} session={session} onStart={startSession} onJoin={joinSession} onComplete={completeSession} onCancel={cancelSession} onDelete={setTarget} />)}</div> : <EmptyState title="No live classes scheduled" action={<Link className="btn btn-primary" to="/teacher/sessions/create">Create Live Class</Link>} />}
-      <ConfirmDialog open={Boolean(target)} title="Delete session" message={`Delete ${target?.title || "this session"}?`} onClose={() => setTarget(null)} onConfirm={confirmDelete} loading={deleting} confirmLabel="Delete session" />
-    </div>
+    <section className="page-stack teacher-sessions-page">
+      <PageHeader
+        eyebrow="Live Classes"
+        title="Start and manage live sessions"
+        description="Launch LiveKit sessions, track attendance, and manage upcoming classes."
+        actions={
+          <Link className="btn btn-primary" to="/teacher/sessions/create">
+            ▷ Start a class
+          </Link>
+        }
+      />
+
+      <section className="live-stats-grid">
+        <article className="lms-stat-card">
+          <span>Live Now</span>
+          <em>⌁</em>
+          <strong>{grouped.live.length}</strong>
+          <small>Sessions currently running</small>
+        </article>
+
+        <article className="lms-stat-card">
+          <span>Upcoming</span>
+          <em>◷</em>
+          <strong>{grouped.upcoming.length}</strong>
+          <small>Sessions ready to start</small>
+        </article>
+
+        <article className="lms-stat-card">
+          <span>Completed</span>
+          <em>✓</em>
+          <strong>{grouped.completed.length}</strong>
+          <small>Finished classes</small>
+        </article>
+
+        <article className="lms-stat-card">
+          <span>Total Sessions</span>
+          <em>▣</em>
+          <strong>{grouped.total}</strong>
+          <small>All scheduled live classes</small>
+        </article>
+      </section>
+
+      <section className="live-now-panel">
+        <div className="live-section-title">
+          <strong>● Live now</strong>
+          <span>Manage sessions →</span>
+        </div>
+
+        {grouped.live.length ? (
+          <div className="live-session-list">
+            {grouped.live.map((session) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                compact
+                onJoin={joinSession}
+                onComplete={completeSession}
+                onCancel={cancelSession}
+                onDelete={setTarget}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="live-empty">
+            <div className="live-empty-icon">⌁</div>
+            <h3>No class is live right now</h3>
+            <p>Start an upcoming class when you are ready.</p>
+            <Link className="btn btn-primary" to="/teacher/sessions/create">
+              ▷ Start a class
+            </Link>
+          </div>
+        )}
+      </section>
+
+      <section className="sessions-section">
+        <p className="section-eyebrow">Upcoming Sessions</p>
+
+        {grouped.upcoming.length ? (
+          <div className="live-session-list">
+            {grouped.upcoming.map((session) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                compact
+                onStart={startSession}
+                onComplete={completeSession}
+                onCancel={cancelSession}
+                onDelete={setTarget}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="No upcoming sessions" message="Create a live class to schedule one." />
+        )}
+      </section>
+
+      <ConfirmDialog
+        open={Boolean(target)}
+        title="Delete session"
+        message={`Delete ${target?.title || "this session"}?`}
+        onClose={() => setTarget(null)}
+        onConfirm={confirmDelete}
+        loading={deleting}
+        confirmLabel="Delete session"
+      />
+    </section>
   );
 }

@@ -1,18 +1,33 @@
 import { useState } from "react";
 
-export default function CopyButton({ value, label = "Copy" }) {
+export default function CopyButton({ value }) {
   const [copied, setCopied] = useState(false);
 
-  const copy = async () => {
-    if (!value) return;
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+  const handleCopy = async () => {
+    if (!value || value === "—") return;
+
+    try {
+      await navigator.clipboard.writeText(String(value));
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1200);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
-    <button className="btn btn-secondary btn-small" type="button" onClick={copy} disabled={!value}>
-      {copied ? "Copied" : label}
+    <button
+      className={`copy-button ${copied ? "copied" : ""}`}
+      type="button"
+      onClick={handleCopy}
+      aria-label="Copy enrollment code"
+      title="Copy enrollment code"
+    >
+      <span aria-hidden="true">{copied ? "✓" : "⧉"}</span>
+      <strong>{copied ? "Copied" : "Copy"}</strong>
     </button>
   );
 }

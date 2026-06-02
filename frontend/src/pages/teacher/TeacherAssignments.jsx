@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import { assignmentApi } from "../../api/assignmentApi";
+import { submissionApi } from "../../api/submissionApi";
 import PageHeader from "../../components/PageHeader";
 import Loader from "../../components/Loader";
 import EmptyState from "../../components/EmptyState";
@@ -84,38 +85,6 @@ function getFileUrl(file) {
   return file.file_url || file.file || file.url || file.image || "";
 }
 
-function getFileName(file, index) {
-  if (!file) return `File ${index + 1}`;
-
-  if (typeof file === "string") {
-    return file.split("/").pop() || `File ${index + 1}`;
-  }
-
-  const url = getFileUrl(file);
-
-  return (
-    file.original_name ||
-    file.name ||
-    file.filename ||
-    url.split("/").pop() ||
-    `File ${index + 1}`
-  );
-}
-
-function isImageFile(file) {
-  if (!file) return false;
-
-  if (typeof file === "object") {
-    const type = file.mime_type || file.content_type || file.type || "";
-
-    if (type.startsWith("image/")) return true;
-  }
-
-  const url = getFileUrl(file).toLowerCase();
-
-  return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
-}
-
 function getFirstFileUrl(assignment) {
   const files = getAssignmentFiles(assignment);
 
@@ -127,11 +96,41 @@ function getFirstFileUrl(assignment) {
   );
 }
 
+function getSubmissionAssignmentId(submission) {
+  const assignment = submission.assignment;
+
+  if (typeof assignment === "object") {
+    return assignment?.id;
+  }
+
+  return assignment || submission.assignment_id;
+}
+
+function getBuiltInSubmissionCount(assignment) {
+  const direct =
+    assignment.submissions_count ??
+    assignment.submission_count ??
+    assignment.submitted_count ??
+    assignment.submitted_students_count ??
+    assignment.total_submissions;
+
+  if (direct !== undefined && direct !== null && direct !== "") {
+    return Number(direct) || 0;
+  }
+
+  if (Array.isArray(assignment.submissions)) {
+    return assignment.submissions.length;
+  }
+
+  return null;
+}
+
 export default function TeacherAssignments() {
   const navigate = useNavigate();
 
   const [classrooms, setClassrooms] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
 
   const [classroomId, setClassroomId] = useState("");
   const [createClassroomId, setCreateClassroomId] = useState("");
@@ -152,6 +151,19 @@ export default function TeacherAssignments() {
       return map;
     }, {});
   }, [classrooms]);
+
+  const submissionCountMap = useMemo(() => {
+    return submissions.reduce((map, submission) => {
+      const assignmentId = getSubmissionAssignmentId(submission);
+
+      if (!assignmentId) return map;
+
+      const key = String(assignmentId);
+      map[key] = (map[key] || 0) + 1;
+
+      return map;
+    }, {});
+  }, [submissions]);
 
   async function loadClassrooms() {
     const response = await axiosClient.get("/Batch/");
@@ -175,6 +187,17 @@ export default function TeacherAssignments() {
     setAssignments(getResults(response.data));
   }
 
+  async function loadSubmissions(nextClassroomId = classroomId) {
+    const params = {};
+
+    if (nextClassroomId) {
+      params.classroom_id = nextClassroomId;
+    }
+
+    const response = await submissionApi.list(params);
+    setSubmissions(getResults(response.data));
+  }
+
   useEffect(() => {
     async function load() {
       try {
@@ -183,6 +206,7 @@ export default function TeacherAssignments() {
 
         await loadClassrooms();
         await loadAssignments("");
+        await loadSubmissions("");
       } catch (err) {
         setError(getErrorMessage(err));
       } finally {
@@ -204,6 +228,16 @@ export default function TeacherAssignments() {
       classroomMap[String(classroomValue || assignment.classroom_id)];
 
     return classroom ? getClassroomLabel(classroom) : classroomValue || "-";
+  }
+
+  function getSubmittedCount(assignment) {
+    const builtInCount = getBuiltInSubmissionCount(assignment);
+
+    if (builtInCount !== null) {
+      return builtInCount;
+    }
+
+    return submissionCountMap[String(assignment.id)] || 0;
   }
 
   const filteredAssignments = useMemo(() => {
@@ -234,12 +268,17 @@ export default function TeacherAssignments() {
       return total + (files.length || (firstFileUrl ? 1 : 0));
     }, 0);
 
+    const totalSubmitted = assignments.reduce((total, assignment) => {
+      return total + getSubmittedCount(assignment);
+    }, 0);
+
     return {
       totalAssignments: assignments.length,
       published: assignments.length,
       totalFiles,
+      totalSubmitted,
     };
-  }, [assignments]);
+  }, [assignments, submissionCountMap]);
 
   function resetCreateForm() {
     setCreateTitle("");
@@ -261,7 +300,9 @@ export default function TeacherAssignments() {
     try {
       setLoading(true);
       setError("");
+
       await loadAssignments(nextClassroomId);
+      await loadSubmissions(nextClassroomId);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -312,6 +353,7 @@ export default function TeacherAssignments() {
       setShowCreate(false);
 
       await loadAssignments(classroomId);
+      await loadSubmissions(classroomId);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -326,8 +368,10 @@ export default function TeacherAssignments() {
 
     try {
       setError("");
+
       await assignmentApi.remove(assignmentId);
       await loadAssignments(classroomId);
+      await loadSubmissions(classroomId);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -352,7 +396,7 @@ export default function TeacherAssignments() {
         }
       />
 
-      <div className="lms-stats lms-stats-3">
+      <div className="lms-stats lms-stats-4">
         <article className="lms-stat-card">
           <strong>{stats.totalAssignments}</strong>
           <span>Total Materials</span>
@@ -366,6 +410,11 @@ export default function TeacherAssignments() {
         <article className="lms-stat-card tone-warning">
           <strong>{stats.totalFiles}</strong>
           <span>Uploaded Files</span>
+        </article>
+
+        <article className="lms-stat-card tone-info">
+          <strong>{stats.totalSubmitted}</strong>
+          <span>Submitted</span>
         </article>
       </div>
 
@@ -413,11 +462,8 @@ export default function TeacherAssignments() {
           {filteredAssignments.map((assignment) => {
             const assignmentFiles = getAssignmentFiles(assignment);
             const firstFileUrl = getFirstFileUrl(assignment);
-            const displayFiles = assignmentFiles.length
-              ? assignmentFiles
-              : firstFileUrl
-                ? [assignment]
-                : [];
+            const fileCount = assignmentFiles.length || (firstFileUrl ? 1 : 0);
+            const submittedCount = getSubmittedCount(assignment);
 
             return (
               <article key={assignment.id} className="assignment-card">
@@ -437,46 +483,7 @@ export default function TeacherAssignments() {
                   </p>
                 )}
 
-                {displayFiles.length > 0 && (
-                  <div className="assignment-photo-grid">
-                    {displayFiles.slice(0, 4).map((file, index) => {
-                      const fileUrl = getFileUrl(file);
-                      const fileName = getFileName(file, index);
-                      const imageFile = isImageFile(file);
-
-                      if (!fileUrl) return null;
-
-                      return (
-                        <a
-                          key={file.id || fileUrl || index}
-                          href={fileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={
-                            imageFile
-                              ? "assignment-photo-link"
-                              : "assignment-file-link"
-                          }
-                        >
-                          {imageFile ? (
-                            <img
-                              src={fileUrl}
-                              alt={`Study material upload ${index + 1}`}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <>
-                              <span className="assignment-file-icon">📄</span>
-                              <strong>{fileName}</strong>
-                            </>
-                          )}
-                        </a>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="assignment-meta-grid assignment-meta-grid-3">
+                <div className="assignment-meta-grid assignment-meta-grid-4">
                   <span>
                     <small>Uploaded At</small>
                     <strong>{formatDateTime(assignment.upload_at)}</strong>
@@ -484,20 +491,19 @@ export default function TeacherAssignments() {
 
                   <span>
                     <small>Files</small>
-                    <strong>
-                      {assignmentFiles.length || (firstFileUrl ? 1 : 0)}
-                    </strong>
+                    <strong>{fileCount}</strong>
                   </span>
 
                   <span>
                     <small>Submissions</small>
-                    <button
-                      className="submission-link"
-                      type="button"
-                      onClick={() => navigate("/teacher/submissions")}
-                    >
-                      View submissions
-                    </button>
+                    <strong>
+                      {submittedCount} {submittedCount === 1 ? "student" : "students"}
+                    </strong>
+                  </span>
+
+                  <span>
+                    <small>Status</small>
+                    <strong>{submittedCount > 0 ? "Submitted" : "No submissions"}</strong>
                   </span>
                 </div>
 
@@ -512,7 +518,7 @@ export default function TeacherAssignments() {
 
                   {firstFileUrl && (
                     <a
-                      className="btn btn-secondary"
+                      className="btn btn-ghost"
                       href={firstFileUrl}
                       target="_blank"
                       rel="noreferrer"

@@ -3,23 +3,23 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 function teacherLinks() {
   return [
-    ["Dashboard", "/teacher/dashboard", "▦"],
-    ["Courses", "/teacher/courses", "▣"],
-    ["Classrooms", "/teacher/batches", "▤"],
-    ["Live Classes", "/teacher/sessions", "◉"],
-    ["Assignments", "/teacher/assignments", "▧"],
-    ["Submissions", "/teacher/submissions", "⇪"],
+    ["Dashboard", "/teacher/dashboard", "⌘"],
+    ["Courses", "/teacher/courses", "▱"],
+    ["Classrooms", "/teacher/batches", "♧"],
+    ["Live Classes", "/teacher/sessions", "▻"],
+    ["Assignments", "/teacher/assignments", "▤"],
+    ["Submissions", "/teacher/submissions", "✓"],
   ];
 }
 
 function studentLinks() {
   return [
-    ["Dashboard", "/student/dashboard", "▦"],
+    ["Dashboard", "/student/dashboard", "⌘"],
     ["Join Classroom", "/student/join-classroom", "+"],
-    ["My Classrooms", "/student/batches", "▤"],
-    ["Live Classes", "/student/sessions", "◉"],
-    ["Assignments", "/student/assignments", "▧"],
-    ["My Submissions", "/student/submissions", "⇪"],
+    ["My Classrooms", "/student/batches", "♧"],
+    ["Live Classes", "/student/sessions", "▻"],
+    ["Assignments", "/student/assignments", "▤"],
+    ["My Submissions", "/student/submissions", "✓"],
   ];
 }
 
@@ -31,6 +31,7 @@ export default function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <div className="brand">
         <div className="brand-mark">TN</div>
+
         <div>
           <strong>TeachNest</strong>
           <span>Teacher-first LMS</span>
@@ -52,9 +53,7 @@ export default function Sidebar({ onNavigate }) {
       </nav>
 
       <div className="sidebar-note">
-        <strong>
-          {user?.role === "TEACHER" ? "Teacher Account" : "Student Account"}
-        </strong>
+        <strong>{user?.role === "TEACHER" ? "Teacher Account" : "Student Account"}</strong>
         <span>
           Manage learning, live classes, enrollment codes, assignments, and
           submissions from one clean workspace.
