@@ -4,16 +4,30 @@ import PageHeader from "../../components/PageHeader.jsx";
 import { courseApi } from "../../api/courseApi";
 import { useToast } from "../../context/ToastContext.jsx";
 import { parseApiError, required } from "../../utils/validators";
-import {
-  COURSE_CATEGORY_OPTIONS,
-  COURSE_LEVEL_OPTIONS,
-} from "../../utils/constants";
+
+const COURSE_CATEGORY_OPTIONS = [
+  { value: "PROGRAMMING", label: "Programming" },
+  { value: "DESIGN", label: "Design" },
+  { value: "BUSINESS", label: "Business" },
+  { value: "MARKETING", label: "Marketing" },
+  { value: "DATA_SCIENCE", label: "Data Science" },
+  { value: "LANGUAGE", label: "Language" },
+  { value: "OTHER", label: "Other" },
+];
+
+const COURSE_LEVEL_OPTIONS = [
+  { value: "BEGINNER", label: "Beginner" },
+  { value: "INTERMEDIATE", label: "Intermediate" },
+  { value: "ADVANCED", label: "Advanced" },
+];
+
+const MAX_DURATION_WEEKS = 2147483647;
 
 const initialForm = {
   title: "",
   description: "",
-  category: "",
-  level: "",
+  category: "PROGRAMMING",
+  level: "BEGINNER",
   duration_weeks: "",
 };
 
@@ -38,6 +52,8 @@ export default function CreateCourse() {
     event.preventDefault();
     setError("");
 
+    const durationWeeks = Number(form.duration_weeks);
+
     if (!required(form.title)) {
       return setError("Title is required");
     }
@@ -54,19 +70,26 @@ export default function CreateCourse() {
       return setError("Level is required");
     }
 
-    if (!required(form.duration_weeks) || Number(form.duration_weeks) <= 0) {
-      return setError("Duration must be a positive number");
+    if (
+      !required(form.duration_weeks) ||
+      !Number.isInteger(durationWeeks) ||
+      durationWeeks <= 0 ||
+      durationWeeks > MAX_DURATION_WEEKS
+    ) {
+      return setError(
+        `Duration must be a positive whole number up to ${MAX_DURATION_WEEKS}`
+      );
     }
 
     try {
       setLoading(true);
 
       await courseApi.createCourse({
-        title: form.title,
-        description: form.description,
+        title: form.title.trim(),
+        description: form.description.trim(),
         category: form.category,
         level: form.level,
-        duration_weeks: Number(form.duration_weeks),
+        duration_weeks: durationWeeks,
       });
 
       showToast("Course created", "success");
@@ -113,8 +136,6 @@ export default function CreateCourse() {
           <label>
             Category
             <select name="category" value={form.category} onChange={update}>
-              <option value="">Select category</option>
-
               {COURSE_CATEGORY_OPTIONS.map((category) => (
                 <option key={category.value} value={category.value}>
                   {category.label}
@@ -126,8 +147,6 @@ export default function CreateCourse() {
           <label>
             Level
             <select name="level" value={form.level} onChange={update}>
-              <option value="">Select level</option>
-
               {COURSE_LEVEL_OPTIONS.map((level) => (
                 <option key={level.value} value={level.value}>
                   {level.label}
@@ -141,6 +160,8 @@ export default function CreateCourse() {
             <input
               type="number"
               min="1"
+              max={MAX_DURATION_WEEKS}
+              step="1"
               name="duration_weeks"
               value={form.duration_weeks}
               onChange={update}

@@ -9,22 +9,19 @@ import CopyButton from "../../components/CopyButton.jsx";
 import { batchApi } from "../../api/batchApi";
 import { courseApi } from "../../api/courseApi";
 import { useToast } from "../../context/ToastContext.jsx";
-import {
-  parseApiError,
-  required,
-  validateDateRange,
-} from "../../utils/validators";
+import { parseApiError, required } from "../../utils/validators";
 import { formatDate } from "../../utils/dateFormatter";
+
+const MAX_STUDENTS = 2147483647;
 
 const initialBatchForm = {
   course: "",
   name: "",
   description: "",
   max_students: 20,
-  start_date: "",
-  end_date: "",
   allow_self_enrollment: true,
   is_active: true,
+  start_date: "",
 };
 
 function getResults(data) {
@@ -65,6 +62,19 @@ function getEnrollmentCode(batch) {
 
 function getBatchStatus(batch) {
   return batch?.is_active === false ? "INACTIVE" : "ACTIVE";
+}
+
+function getTeacherName(batch) {
+  if (typeof batch?.teacher === "object") {
+    return (
+      batch.teacher?.full_name ||
+      batch.teacher?.name ||
+      batch.teacher?.username ||
+      "—"
+    );
+  }
+
+  return batch?.teacher || "—";
 }
 
 export default function TeacherBatches() {
@@ -179,14 +189,18 @@ export default function TeacherBatches() {
 
   const fillForm = (batch) => {
     setForm({
-      course: batch.course ? String(batch.course) : "",
+      course:
+        typeof batch.course === "object"
+          ? String(batch.course?.id || "")
+          : batch.course
+            ? String(batch.course)
+            : "",
       name: batch.name || "",
       description: batch.description || "",
-      max_students: batch.max_students || "",
-      start_date: batch.start_date || "",
-      end_date: batch.end_date || "",
+      max_students: batch.max_students || 20,
       allow_self_enrollment: Boolean(batch.allow_self_enrollment),
       is_active: batch.is_active === false ? false : true,
+      start_date: batch.start_date || "",
     });
   };
 
@@ -238,33 +252,33 @@ export default function TeacherBatches() {
   };
 
   const validateBatchForm = () => {
+    const maxStudents = Number(form.max_students);
+
     if (!required(form.course)) return "Course is required";
     if (!required(form.name)) return "Classroom name is required";
+    if (!required(form.description)) return "Description is required";
+    if (!required(form.start_date)) return "Start date is required";
 
-    if (!required(form.max_students) || Number(form.max_students) <= 0) {
-      return "Max students must be positive";
+    if (
+      !required(form.max_students) ||
+      !Number.isInteger(maxStudents) ||
+      maxStudents <= 0 ||
+      maxStudents > MAX_STUDENTS
+    ) {
+      return `Max students must be a positive whole number up to ${MAX_STUDENTS}`;
     }
-
-    if (!required(form.start_date)) {
-      return "Start date is required";
-    }
-
-    const dateError = validateDateRange(form.start_date, form.end_date);
-
-    if (dateError) return dateError;
 
     return "";
   };
 
   const getBatchPayload = () => ({
-    course: Number(form.course),
+    course: form.course,
     name: form.name.trim(),
-    description: form.description?.trim() || "",
+    description: form.description.trim(),
     max_students: Number(form.max_students),
-    start_date: form.start_date || "",
-    end_date: form.end_date || "",
     allow_self_enrollment: Boolean(form.allow_self_enrollment),
     is_active: Boolean(form.is_active),
+    start_date: form.start_date,
   });
 
   const submitCreate = async (event) => {
@@ -313,7 +327,7 @@ export default function TeacherBatches() {
       closePopup();
       load();
     } catch (err) {
-      setFormError(parseApiError(err));
+      setFormError(parseApiError(err, "Could not update classroom"));
     } finally {
       setSaving(false);
     }
@@ -368,7 +382,7 @@ export default function TeacherBatches() {
 
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
-                {course.title}
+                {course.title || course.name}
               </option>
             ))}
           </select>
@@ -380,7 +394,7 @@ export default function TeacherBatches() {
             name="name"
             value={form.name || ""}
             onChange={updateForm}
-            placeholder="Introduction to Programming — Batch A"
+            placeholder="Morning batch Section A"
           />
         </label>
 
@@ -401,6 +415,8 @@ export default function TeacherBatches() {
             <input
               type="number"
               min="1"
+              max={MAX_STUDENTS}
+              step="1"
               name="max_students"
               value={form.max_students || ""}
               onChange={updateForm}
@@ -413,16 +429,6 @@ export default function TeacherBatches() {
               type="date"
               name="start_date"
               value={form.start_date || ""}
-              onChange={updateForm}
-            />
-          </label>
-
-          <label>
-            End date
-            <input
-              type="date"
-              name="end_date"
-              value={form.end_date || ""}
               onChange={updateForm}
             />
           </label>
@@ -513,7 +519,10 @@ export default function TeacherBatches() {
               />
             </div>
 
-            <div className="classroom-filter-pills" aria-label="Classroom status filter">
+            <div
+              className="classroom-filter-pills"
+              aria-label="Classroom status filter"
+            >
               <button
                 type="button"
                 className={statusFilter === "ALL" ? "active" : ""}
@@ -563,27 +572,27 @@ export default function TeacherBatches() {
                   <h3>{batchName}</h3>
 
                   <div className="classroom-card-meta">
-                    <span>
+                    <div className="classroom-course-meta">
                       <small>Course</small>
                       <strong>{courseTitle}</strong>
-                    </span>
 
-                    <span>
+                      <div className="classroom-code-meta">
+                        <small>Enrollment Code</small>
+
+                        <div className="classroom-code-box-small">
+                          <strong>{enrollmentCode}</strong>
+
+                          {enrollmentCode && enrollmentCode !== "—" && (
+                            <CopyButton value={enrollmentCode} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
                       <small>Students</small>
                       <strong>{studentsCount} enrolled</strong>
-                    </span>
-
-                    <span className="classroom-code-meta">
-  <small>Enrollment Code</small>
-
-  <div className="classroom-code-box-small">
-    <strong>{enrollmentCode}</strong>
-
-    {enrollmentCode && enrollmentCode !== "—" && (
-      <CopyButton value={enrollmentCode} />
-    )}
-  </div>
-</span>
+                    </div>
                   </div>
 
                   <div className="classroom-card-actions">
@@ -620,7 +629,11 @@ export default function TeacherBatches() {
             title="No classrooms found"
             message="Create a classroom or adjust your search/filter."
             action={
-              <button className="btn btn-primary" type="button" onClick={openCreate}>
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={openCreate}
+              >
                 Create Classroom
               </button>
             }
@@ -659,7 +672,11 @@ export default function TeacherBatches() {
                 </p>
               </div>
 
-              <button className="drawer-close" type="button" onClick={closePopup}>
+              <button
+                className="drawer-close"
+                type="button"
+                onClick={closePopup}
+              >
                 ×
               </button>
             </div>
@@ -675,9 +692,7 @@ export default function TeacherBatches() {
                 <div className="drawer-body">
                   <div className="details-hero">
                     <div className="card-topline">
-                      <span className="pill">
-                        {getCourseTitle(selectedBatch)}
-                      </span>
+                      <span className="pill">{getCourseTitle(selectedBatch)}</span>
 
                       <StatusBadge status={getBatchStatus(selectedBatch)} />
                     </div>
@@ -690,7 +705,9 @@ export default function TeacherBatches() {
                         <strong>{getEnrollmentCode(selectedBatch)}</strong>
                       </div>
 
-                      <CopyButton value={getEnrollmentCode(selectedBatch)} />
+                      {getEnrollmentCode(selectedBatch) !== "—" && (
+                        <CopyButton value={getEnrollmentCode(selectedBatch)} />
+                      )}
                     </div>
                   </div>
 
@@ -705,7 +722,7 @@ export default function TeacherBatches() {
                   <div className="meta-grid drawer-meta-grid">
                     <span>
                       <strong>Teacher</strong>
-                      {selectedBatch.teacher || "—"}
+                      {getTeacherName(selectedBatch)}
                     </span>
 
                     <span>
@@ -718,20 +735,21 @@ export default function TeacherBatches() {
                       {formatDate(selectedBatch.start_date)}
                     </span>
 
-                    <span>
-                      <strong>End</strong>
-                      {formatDate(selectedBatch.end_date)}
-                    </span>
-
                     <span className="meta-wide">
                       <strong>Self enrollment</strong>
-                      {selectedBatch.allow_self_enrollment ? "Allowed" : "Disabled"}
+                      {selectedBatch.allow_self_enrollment
+                        ? "Allowed"
+                        : "Disabled"}
                     </span>
                   </div>
                 </div>
 
                 <div className="drawer-footer">
-                  <button className="btn btn-ghost" type="button" onClick={closePopup}>
+                  <button
+                    className="btn btn-ghost"
+                    type="button"
+                    onClick={closePopup}
+                  >
                     Close
                   </button>
 
