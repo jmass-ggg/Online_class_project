@@ -101,11 +101,11 @@ export default function Login() {
       <section className="minimal-login-card">
         <div className="minimal-login-brand">
           <span aria-hidden="true">▱</span>
-          <strong>TeachNest</strong>
+          <strong>Classio</strong>
         </div>
 
         <div className="minimal-login-heading">
-          <h1>Welcome to TeachNest LMS</h1>
+          <h1>Welcome to Classio LMS</h1>
           <p>Log in to continue to your dashboard.</p>
         </div>
 

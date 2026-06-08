@@ -14,7 +14,7 @@ export default function Landing() {
       <header className="public-navbar">
         <Link to="/" className="public-logo">
           <span className="logo-icon">⌂</span>
-          <span>TeachNest</span>
+          <span>Classio</span>
         </Link>
 
         <nav className="public-links">
@@ -33,7 +33,7 @@ export default function Landing() {
 
       <section className="role-hero">
         <div className="role-hero-copy">
-          <h1>Welcome to TeachNest</h1>
+          <h1>Welcome to Classio</h1>
           <p>
             Select your role to personalize your experience and start connecting
             with your educational community.
@@ -66,8 +66,8 @@ export default function Landing() {
       </section>
 
       <footer className="public-footer">
-        <strong>TeachNest</strong>
-        <span>© 2024 TeachNest LMS. Empowering educators and students globally.</span>
+        <strong>Classio</strong>
+        <span>© 2024 Classio LMS. Empowering educators and students globally.</span>
         <div>
           <a href="#privacy">Privacy Policy</a>
           <a href="#terms">Terms of Service</a>

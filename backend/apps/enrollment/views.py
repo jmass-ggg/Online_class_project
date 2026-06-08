@@ -55,9 +55,15 @@ class JoinClassViewSet(APIView):
         }, status=status.HTTP_201_CREATED)
         
 class MyClassroomView(generics.ListAPIView):
+    
     permission_classes=[IsStudent]
     serializer_class=EnrollmentListSerializer
-    
+    @extend_schema(
+        request=EnrollmentListSerializer,
+        responses=EnrollmentListSerializer,
+        description="Join a batch using enrollment code",
+        summary="Join Batch"
+    )
     def get_queryset(self):
         return Enrollment.objects.select_related(
             "batch",

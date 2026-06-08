@@ -19,6 +19,38 @@ export default function BatchCard({
   const courseTitle = batch.course_title || `Course #${batch.course}`;
   const teacherName = batch.teacher || "—";
 
+  if (role === "student") {
+    return (
+      <article className="card batch-card">
+        <div className="card-topline">
+          <span className="pill">{courseTitle}</span>
+        </div>
+
+        <div className="card-heading">
+          <h3>{batch.name}</h3>
+          <p>{batch.description || "No description available"}</p>
+        </div>
+
+        <div className="meta-grid small-meta-grid">
+          <span className="meta-wide">
+            <strong>Teacher</strong>
+            {teacherName}
+          </span>
+        </div>
+
+        <div className="card-actions">
+          <Link className="btn btn-secondary" to={`/student/courses/${batch.course}`}>
+            Course details
+          </Link>
+
+          <Link className="btn btn-primary" to="/student/sessions">
+            View sessions
+          </Link>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article className="card batch-card">
       <div className="card-topline">
@@ -36,7 +68,7 @@ export default function BatchCard({
           <strong>{batch.enrollment_code || "Not generated"}</strong>
         </div>
 
-        {role === "teacher" && <CopyButton value={batch.enrollment_code} />}
+        <CopyButton value={batch.enrollment_code} />
       </div>
 
       <div className="meta-grid small-meta-grid">
@@ -67,62 +99,48 @@ export default function BatchCard({
       </div>
 
       <div className="card-actions">
-        {role === "teacher" ? (
-          <>
-            <button
-              className="btn btn-secondary"
-              type="button"
-              onClick={() => onView?.(batch)}
-            >
-              Details
-            </button>
+        <button
+          className="btn btn-secondary"
+          type="button"
+          onClick={() => onView?.(batch)}
+        >
+          Details
+        </button>
 
-            <Link
-              className="btn btn-primary"
-              to="/teacher/sessions/create"
-              state={{ classroomId: batch.id }}
-            >
-              Schedule live class
-            </Link>
+        <Link
+          className="btn btn-primary"
+          to="/teacher/sessions/create"
+          state={{ classroomId: batch.id }}
+        >
+          Schedule live class
+        </Link>
 
-            <button
-              className="btn btn-ghost"
-              type="button"
-              onClick={() => onEdit?.(batch)}
-            >
-              Edit
-            </button>
+        <button
+          className="btn btn-ghost"
+          type="button"
+          onClick={() => onEdit?.(batch)}
+        >
+          Edit
+        </button>
 
-            {onRegenerate && (
-              <button
-                className="btn btn-ghost"
-                type="button"
-                onClick={() => onRegenerate(batch)}
-              >
-                Regenerate code
-              </button>
-            )}
+        {onRegenerate && (
+          <button
+            className="btn btn-ghost"
+            type="button"
+            onClick={() => onRegenerate(batch)}
+          >
+            Regenerate code
+          </button>
+        )}
 
-            {onDelete && (
-              <button
-                className="btn btn-danger"
-                type="button"
-                onClick={() => onDelete(batch)}
-              >
-                Delete
-              </button>
-            )}
-          </>
-        ) : (
-          <>
-            <Link className="btn btn-secondary" to={`/student/courses/${batch.course}`}>
-              Course details
-            </Link>
-
-            <Link className="btn btn-primary" to="/student/sessions">
-              View sessions
-            </Link>
-          </>
+        {onDelete && (
+          <button
+            className="btn btn-danger"
+            type="button"
+            onClick={() => onDelete(batch)}
+          >
+            Delete
+          </button>
         )}
       </div>
     </article>

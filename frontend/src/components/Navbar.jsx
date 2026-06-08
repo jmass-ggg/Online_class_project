@@ -42,7 +42,7 @@ export default function Navbar({ onMenuClick }) {
         </button>
 
         <div>
-          <p className="topbar-kicker">TeachNest LMS</p>
+          <p className="topbar-kicker">Classio LMS</p>
           <h1>{getPageTitle(location.pathname, user?.role)}</h1>
         </div>
       </div>

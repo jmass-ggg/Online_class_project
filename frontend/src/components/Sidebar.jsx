@@ -33,7 +33,7 @@ export default function Sidebar({ onNavigate }) {
         <div className="brand-mark">TN</div>
 
         <div>
-          <strong>TeachNest</strong>
+          <strong>Classio</strong>
           <span>Teacher-first LMS</span>
         </div>
       </div>

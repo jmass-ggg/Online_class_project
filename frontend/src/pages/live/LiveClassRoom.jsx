@@ -341,7 +341,7 @@ function NexusVideoRoom({ session, connection }) {
   return (
     <div className={`nexus-video-shell ${sidebarOpen ? "" : "sidebar-closed"}`}>
       <header className="nexus-topbar">
-        <div className="nexus-brand">TeachNest Live</div>
+        <div className="nexus-brand">Classio Live</div>
 
         <div className="nexus-live">
           <span />
