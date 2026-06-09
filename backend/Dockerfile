@@ -24,6 +24,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    ghostscript \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /wheels /wheels
@@ -34,6 +36,6 @@ RUN pip install --no-cache-dir --no-compile /wheels/* \
 
 COPY . .
 
-EXPOSE 8000teacher@example.com
+EXPOSE 8000
 
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
